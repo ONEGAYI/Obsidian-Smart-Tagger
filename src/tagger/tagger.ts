@@ -4,9 +4,10 @@ import { findTemplate } from "../ai/prompts";
 import { hasTags, extractContent, truncateContent, writeTags } from "./frontmatter";
 import { getVaultTags, invalidateVaultTagsCache } from "./vault-tags";
 import {
+  ProgressNotice,
+  notifyStart,
   notifySuccess,
   notifySkipped,
-  notifyProgress,
   notifyBatchComplete,
   notifyError,
   notifyBusy,
@@ -41,18 +42,22 @@ export class Tagger {
       return { success: false, reason: "skipped" };
     }
 
+    const progress = notifyStart(1);
+
     try {
       this.isProcessing = true;
       const existingTags = this.settings.preferExistingTags ? getVaultTags(this.app) : [];
       const tags = await this.generateTagsForSingleFile(file, existingTags);
-      
+
       if (tags.length === 0) {
+        progress.done();
         notifyError("AI 未返回有效标签");
         return { success: false, reason: "empty" };
       }
 
       await writeTags(this.app, file, tags);
       invalidateVaultTagsCache();
+      progress.done();
       notifySuccess(tags);
 
       if (this.settings.debugMode) {
@@ -62,6 +67,7 @@ export class Tagger {
       return { success: true };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
+      progress.done();
       notifyError(message);
       console.error("[Smart-Tagger] 标签生成失败:", error);
       return { success: false, reason: "error" };
@@ -104,20 +110,24 @@ export class Tagger {
     let success = 0;
     let skipped = 0;
     let failed = 0;
+    let processed = 0;
+
+    const progress = notifyStart(files.length);
 
     try {
-      // 外提循环内的重复计算
       const existingTags = this.settings.preferExistingTags ? getVaultTags(this.app) : [];
-      
+
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
 
         if (this.settings.skipTaggedFiles && hasTags(this.app, file)) {
           skipped++;
+          processed++;
+          progress.update(`正在处理 ${processed}/${files.length}（已跳过 ${skipped}）`);
           continue;
         }
 
-        notifyProgress(i + 1, files.length);
+        progress.update(`正在处理 ${processed + 1}/${files.length} — ${file.basename}`);
 
         try {
           const tags = await this.generateTagsForSingleFile(file, existingTags);
@@ -132,10 +142,16 @@ export class Tagger {
           console.error("[Smart-Tagger] 文件处理失败:", file.path, error);
           failed++;
         }
+
+        processed++;
       }
 
       invalidateVaultTagsCache();
+      progress.done();
       notifyBatchComplete(success, skipped, failed);
+    } catch (error) {
+      progress.done();
+      throw error;
     } finally {
       this.isProcessing = false;
     }

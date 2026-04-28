@@ -9,6 +9,8 @@ interface OllamaConfig {
 }
 
 export class OllamaClient implements AIClient {
+  private enableThinking = false;
+
   constructor(
     private config: OllamaConfig,
     private template: PromptTemplate
@@ -22,6 +24,10 @@ export class OllamaClient implements AIClient {
     this.template = template;
   }
 
+  updateThinking(enabled: boolean) {
+    this.enableThinking = enabled;
+  }
+
   async generateTags(content: string, options: PromptOptions): Promise<string[]> {
     const prompt = renderPrompt(this.template, {
       content,
@@ -31,7 +37,7 @@ export class OllamaClient implements AIClient {
       preferExisting: options.preferExisting,
     });
 
-    const body = {
+    const body: Record<string, unknown> = {
       model: this.config.model,
       messages: [
         { role: "system", content: prompt.system },
@@ -39,6 +45,10 @@ export class OllamaClient implements AIClient {
       ],
       stream: false,
     };
+
+    if (this.enableThinking) {
+      body.think = true;
+    }
 
     const response = await this.request("/api/chat", body);
     const text = response.message?.content ?? "";

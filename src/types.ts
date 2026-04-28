@@ -3,6 +3,7 @@ export interface AIClient {
   generateTags(content: string, options: PromptOptions): Promise<string[]>;
   testConnection(): Promise<{ ok: boolean; error?: string }>;
   updateTemplate?(template: PromptTemplate): void;
+  updateThinking?(enabled: boolean): void;
 }
 
 /** AI 调用选项 */
@@ -42,6 +43,7 @@ export interface SmartTaggerSettings {
   promptTemplates: PromptTemplate[];
   activePromptName: string;
 
+  enableThinking: boolean;
   debugMode: boolean;
 }
 
@@ -67,6 +69,7 @@ export const DEFAULT_SETTINGS: SmartTaggerSettings = {
   promptTemplates: [],
   activePromptName: "默认模板",
 
+  enableThinking: false,
   debugMode: false,
 };
 
@@ -80,8 +83,10 @@ export const DEFAULT_PROMPT_TEMPLATE: PromptTemplate = {
 2. 标签使用中文，除非是专有名词或技术术语
 3. 标签不需要加 # 前缀
 4. 只返回 JSON 数组格式的标签列表，不要有其他解释
-5. 示例格式：["标签1", "标签2", "标签3"]`,
+5. 示例格式：["标签1", "标签2", "标签3"]
+6. 如果提供了已有标签列表，优先从中选取匹配的标签，尽量避免创建新标签，保持标签体系一致性`,
   user: `请为以下文档内容生成合适的标签。标签数量：{{minTags}} 到 {{maxTags}} 个。
 
+{{existingTags}}
 {{content}}`,
 };

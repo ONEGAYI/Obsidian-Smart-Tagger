@@ -10,6 +10,8 @@ interface OpenAIConfig {
 }
 
 export class OpenAIClient implements AIClient {
+  private enableThinking = false;
+
   constructor(
     private config: OpenAIConfig,
     private template: PromptTemplate
@@ -23,6 +25,10 @@ export class OpenAIClient implements AIClient {
     this.template = template;
   }
 
+  updateThinking(enabled: boolean) {
+    this.enableThinking = enabled;
+  }
+
   async generateTags(content: string, options: PromptOptions): Promise<string[]> {
     const prompt = renderPrompt(this.template, {
       content,
@@ -32,7 +38,7 @@ export class OpenAIClient implements AIClient {
       preferExisting: options.preferExisting,
     });
 
-    const body = {
+    const body: Record<string, unknown> = {
       model: this.config.model,
       messages: [
         { role: "system", content: prompt.system },
@@ -40,6 +46,10 @@ export class OpenAIClient implements AIClient {
       ],
       temperature: 0.3,
     };
+
+    if (this.enableThinking) {
+      body.reasoning_effort = "medium";
+    }
 
     const response = await this.request("/v1/chat/completions", body);
     const text = response.choices?.[0]?.message?.content ?? "";

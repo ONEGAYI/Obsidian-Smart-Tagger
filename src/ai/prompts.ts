@@ -12,15 +12,16 @@ export function renderPrompt(
   template: PromptTemplate,
   context: RenderContext
 ): { system: string; user: string } {
-  let userPrompt = template.user
+  const existingBlock =
+    context.preferExisting && context.existingTags.length > 0
+      ? `请优先从以下已有标签中选取，只有在必要时才添加新标签：\n${context.existingTags.join("、")}`
+      : "";
+
+  const userPrompt = template.user
     .replace(/\{\{minTags\}\}/g, String(context.minTags))
     .replace(/\{\{maxTags\}\}/g, String(context.maxTags))
+    .replace(/\{\{existingTags\}\}/g, existingBlock)
     .replace(/\{\{content\}\}/g, context.content);
-
-  if (context.preferExisting && context.existingTags.length > 0) {
-    const tagList = context.existingTags.join("、");
-    userPrompt += `\n\n请优先从以下已有标签中选取，只有在必要时才添加新标签：${tagList}`;
-  }
 
   return {
     system: template.system,

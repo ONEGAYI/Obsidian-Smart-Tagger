@@ -28,6 +28,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
     containerEl.createEl("h2", { text: "Smart Tagger 设置" });
     this.renderAISection(containerEl);
     this.renderStrategySection(containerEl);
+    this.renderAdvancedSection(containerEl);
     this.renderPromptSection(containerEl);
   }
 
@@ -207,6 +208,30 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
             this.settings.maxContentChars = value;
             await this.save();
           })
+      );
+  }
+
+  private renderAdvancedSection(containerEl: HTMLElement): void {
+    containerEl.createEl("h3", { text: "高级设置" });
+
+    new Setting(containerEl)
+      .setName("启用思考模式")
+      .setDesc("开启后模型会先进行推理再输出标签（OpenAI 兼容 API 使用 reasoning_effort，Ollama 使用 think 参数）")
+      .addToggle((toggle) =>
+        toggle.setValue(this.settings.enableThinking).onChange(async (value) => {
+          this.settings.enableThinking = value;
+          await this.save();
+        })
+      );
+
+    new Setting(containerEl)
+      .setName("调试模式")
+      .setDesc("在控制台输出详细日志")
+      .addToggle((toggle) =>
+        toggle.setValue(this.settings.debugMode).onChange(async (value) => {
+          this.settings.debugMode = value;
+          await this.save();
+        })
       );
   }
 

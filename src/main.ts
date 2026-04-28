@@ -88,13 +88,15 @@ export default class SmartTaggerPlugin extends Plugin {
       DEFAULT_PROMPT_TEMPLATE;
 
     if (this.settings.aiMode === "ollama") {
-      return new OllamaClient(
+      const client = new OllamaClient(
         { baseUrl: this.settings.ollamaBaseUrl, model: this.settings.ollamaModel },
         template
       );
+      client.updateThinking(this.settings.enableThinking);
+      return client;
     }
 
-    return new OpenAIClient(
+    const client = new OpenAIClient(
       {
         baseUrl: this.settings.openaiBaseUrl,
         apiKey: this.settings.openaiApiKey,
@@ -102,6 +104,8 @@ export default class SmartTaggerPlugin extends Plugin {
       },
       template
     );
+    client.updateThinking(this.settings.enableThinking);
+    return client;
   }
 
   private registerCommands(): void {
