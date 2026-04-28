@@ -8,6 +8,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
   private onSave: (settings: SmartTaggerSettings) => Promise<void>;
   private onTestConnection: () => Promise<boolean>;
   private decryptedApiKey: string = "";
+  private _pendingTemplateName?: string;
 
   constructor(
     app: App,
@@ -173,13 +174,19 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("跳过已有标签的文档")
-      .setDesc("处理时自动跳过 frontmatter 中已有 tags 的文档")
-      .addToggle((toggle) =>
-        toggle.setValue(this.settings.skipTaggedFiles).onChange(async (value) => {
-          this.settings.skipTaggedFiles = value;
-          await this.save();
-        })
+      .setName("跳过已有字段")
+      .setDesc("逗号分隔字段名。当 frontmatter 中所有指定字段都已存在时跳过该文档。如：tags, description")
+      .addText((text) =>
+        text
+          .setPlaceholder("tags")
+          .setValue(this.settings.skipFields.join(", "))
+          .onChange(async (value) => {
+            this.settings.skipFields = value
+              .split(",")
+              .map((s) => s.trim())
+              .filter((s) => s.length > 0);
+            await this.save();
+          })
       );
 
     new Setting(containerEl)
@@ -254,6 +261,17 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
         });
       });
 
+    new Setting(containerEl)
+      .setName("模板名称")
+      .setDesc("修改后点击「保存当前修改」生效")
+      .addText((text) =>
+        text
+          .setValue(this.settings.activePromptName)
+          .onChange((value) => {
+            this._pendingTemplateName = value;
+          })
+      );
+
     const activeTemplate =
       this.settings.promptTemplates.find((t) => t.name === this.settings.activePromptName) ??
       this.settings.promptTemplates[0];
@@ -281,7 +299,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
 
       containerEl.createEl("p", {
         cls: "smart-tagger-hint",
-        text: "可用变量：{{minTags}}、{{maxTags}}、{{content}}（自动注入）；{{existingTags}}（preferExisting 开启时自动追加）",
+        text: "可用变量：{{minTags}}、{{maxTags}}、{{content}}（自动注入）；{{existingTags}}（preferExisting 开启时自动注入）。自定义字段：{{字段名: AI提示描述}}，如 {{description: 用一句话概括文档内容}}",
       });
     }
 
@@ -289,13 +307,25 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
       .setName("模板操作")
       .addButton((btn) =>
         btn.setButtonText("保存当前修改").onClick(async () => {
+          if (this._pendingTemplateName && this._pendingTemplateName !== activeTemplate!.name) {
+            const newName = this._pendingTemplateName.trim();
+            if (newName) {
+              const oldName = activeTemplate!.name;
+              activeTemplate!.name = newName;
+              if (this.settings.activePromptName === oldName) {
+                this.settings.activePromptName = newName;
+              }
+            }
+          }
           this.settings.promptTemplates = upsertTemplate(this.settings.promptTemplates, activeTemplate!);
+          this._pendingTemplateName = undefined;
           await this.save();
+          this.display();
         })
       )
       .addButton((btn) =>
         btn.setButtonText("保存为新模板").onClick(async () => {
-          const name = `模板 ${this.settings.promptTemplates.length + 1}`;
+          const name = this._pendingTemplateName?.trim() || `模板 ${this.settings.promptTemplates.length + 1}`;
           const newTemplate: PromptTemplate = {
             name,
             system: activeTemplate?.system ?? DEFAULT_PROMPT_TEMPLATE.system,
@@ -303,6 +333,21 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
           };
           this.settings.promptTemplates = upsertTemplate(this.settings.promptTemplates, newTemplate);
           this.settings.activePromptName = name;
+          this._pendingTemplateName = undefined;
+          await this.save();
+          this.display();
+        })
+      )
+      .addButton((btn) =>
+        btn.setButtonText("重命名当前模板").onClick(async () => {
+          const newName = await this.promptInput("新模板名称", activeTemplate!.name);
+          if (!newName || newName.trim() === "") return;
+          const renamedTemplate: PromptTemplate = {
+            ...activeTemplate!,
+            name: newName.trim(),
+          };
+          this.settings.promptTemplates = upsertTemplate(this.settings.promptTemplates, renamedTemplate);
+          this.settings.activePromptName = newName.trim();
           await this.save();
           this.display();
         })
