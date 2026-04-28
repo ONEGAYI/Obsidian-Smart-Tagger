@@ -1,38 +1,35 @@
 import { App, TFile } from "obsidian";
 
 /**
- * 检查文件 frontmatter 中是否已有标签
+ * 检查文件 frontmatter 中指定字段是否都已存在
  */
-export function hasTags(app: App, file: TFile): boolean {
+export function shouldSkip(app: App, file: TFile, fields: string[]): boolean {
+  if (fields.length === 0) return false;
   const cache = app.metadataCache.getFileCache(file);
-  const tags = cache?.frontmatter?.tags;
-  if (!tags) return false;
-  if (Array.isArray(tags)) return tags.length > 0;
-  if (typeof tags === "string") return tags.length > 0;
-  return false;
+  const fm = cache?.frontmatter;
+  if (!fm) return false;
+  return fields.every((field) => fm[field] !== undefined);
 }
 
 /**
- * 获取文件 frontmatter 中的现有标签
+ * 将标签和自定义字段写入文件 frontmatter
+ * - tags: 合并去重
+ * - 其他字段: 直接覆盖
  */
-export function getExistingTags(app: App, file: TFile): string[] {
-  const cache = app.metadataCache.getFileCache(file);
-  const tags = cache?.frontmatter?.tags;
-  if (!tags) return [];
-  if (Array.isArray(tags)) return tags.map(String);
-  if (typeof tags === "string") return [tags];
-  return [];
-}
-
-/**
- * 将标签写入文件 frontmatter（合并去重）
- */
-export async function writeTags(app: App, file: TFile, newTags: string[]): Promise<void> {
+export async function writeFields(
+  app: App,
+  file: TFile,
+  tags: string[],
+  fields: Record<string, string>
+): Promise<void> {
   await app.fileManager.processFrontMatter(file, (frontmatter) => {
     const existing: string[] = frontmatter.tags ?? [];
     const existingStrs = existing.map(String);
-    const merged = [...new Set([...existingStrs, ...newTags])];
-    frontmatter.tags = merged;
+    frontmatter.tags = [...new Set([...existingStrs, ...tags])];
+
+    for (const [key, value] of Object.entries(fields)) {
+      frontmatter[key] = value;
+    }
   });
 }
 
