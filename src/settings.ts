@@ -339,20 +339,6 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
         })
       )
       .addButton((btn) =>
-        btn.setButtonText("重命名当前模板").onClick(async () => {
-          const newName = await this.promptInput("新模板名称", activeTemplate!.name);
-          if (!newName || newName.trim() === "") return;
-          const renamedTemplate: PromptTemplate = {
-            ...activeTemplate!,
-            name: newName.trim(),
-          };
-          this.settings.promptTemplates = upsertTemplate(this.settings.promptTemplates, renamedTemplate);
-          this.settings.activePromptName = newName.trim();
-          await this.save();
-          this.display();
-        })
-      )
-      .addButton((btn) =>
         btn.setButtonText("删除当前模板").setWarning(true).onClick(async () => {
           if (this.settings.promptTemplates.length <= 1) return;
           this.settings.promptTemplates = deleteTemplate(

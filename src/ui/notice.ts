@@ -61,7 +61,7 @@ export function notifySuccess(tags: string[]): void {
 }
 
 export function notifySkipped(): void {
-  notify("已跳过（已有标签）", 2000);
+  notify("已跳过（指定字段已存在）", 2000);
 }
 
 export function notifyBatchComplete(success: number, skipped: number, failed: number): void {

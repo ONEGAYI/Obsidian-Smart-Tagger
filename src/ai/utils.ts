@@ -25,7 +25,7 @@ export function parseResponse(text: string, customFields: CustomField[]): Genera
     return { tags: parseTagsFromResponse(text), fields: {} };
   }
 
-  const objMatch = text.match(/\{[\s\S]*?\}/);
+  const objMatch = text.match(/\{[\s\S]*\}/);
   if (objMatch) {
     try {
       const parsed = JSON.parse(objMatch[0]);
