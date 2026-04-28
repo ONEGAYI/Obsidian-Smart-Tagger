@@ -1,0 +1,71 @@
+import { requestUrl, RequestUrlParam } from "obsidian";
+import { AIClient, PromptOptions, PromptTemplate } from "../types";
+import { renderPrompt } from "./prompts";
+import { parseTagsFromResponse } from "./openai-client";
+
+interface OllamaConfig {
+  baseUrl: string;
+  model: string;
+}
+
+export class OllamaClient implements AIClient {
+  constructor(
+    private config: OllamaConfig,
+    private template: PromptTemplate
+  ) {}
+
+  updateConfig(config: Partial<OllamaConfig>) {
+    Object.assign(this.config, config);
+  }
+
+  updateTemplate(template: PromptTemplate) {
+    this.template = template;
+  }
+
+  async generateTags(content: string, options: PromptOptions): Promise<string[]> {
+    const prompt = renderPrompt(this.template, {
+      content,
+      minTags: options.minTags,
+      maxTags: options.maxTags,
+      existingTags: options.existingTags,
+      preferExisting: options.preferExisting,
+    });
+
+    const body = {
+      model: this.config.model,
+      messages: [
+        { role: "system", content: prompt.system },
+        { role: "user", content: prompt.user },
+      ],
+      stream: false,
+    };
+
+    const response = await this.request("/api/chat", body);
+    const text = response.message?.content ?? "";
+    return parseTagsFromResponse(text);
+  }
+
+  async testConnection(): Promise<boolean> {
+    try {
+      const resp = await requestUrl({
+        url: `${this.config.baseUrl}/api/tags`,
+        method: "GET",
+      });
+      return resp.json?.models?.length > 0;
+    } catch {
+      return false;
+    }
+  }
+
+  private async request(path: string, body: unknown): Promise<any> {
+    const url = `${this.config.baseUrl}${path}`;
+    const params: RequestUrlParam = {
+      url,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    };
+    const resp = await requestUrl(params);
+    return resp.json;
+  }
+}
