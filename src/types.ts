@@ -2,6 +2,7 @@
 export interface AIClient {
   generateTags(content: string, options: PromptOptions): Promise<string[]>;
   testConnection(): Promise<boolean>;
+  updateTemplate?(template: PromptTemplate): void;
 }
 
 /** AI 调用选项 */

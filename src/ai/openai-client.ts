@@ -1,6 +1,7 @@
 import { requestUrl, RequestUrlParam } from "obsidian";
 import { AIClient, PromptOptions, PromptTemplate } from "../types";
 import { renderPrompt } from "./prompts";
+import { parseTagsFromResponse } from "./utils";
 
 interface OpenAIConfig {
   baseUrl: string;
@@ -54,11 +55,11 @@ export class OpenAIClient implements AIClient {
     }
   }
 
-  private async request(path: string, body: unknown, method: string = "POST"): Promise<any> {
+  private async request(path: string, body: unknown, method: "GET" | "POST" | "PUT" | "DELETE" = "POST"): Promise<any> {
     const url = `${this.config.baseUrl}${path}`;
     const params: RequestUrlParam = {
       url,
-      method: method as any,
+      method,
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${this.config.apiKey}`,
@@ -70,18 +71,4 @@ export class OpenAIClient implements AIClient {
   }
 }
 
-export function parseTagsFromResponse(text: string): string[] {
-  const jsonMatch = text.match(/\[[\s\S]*?\]/);
-  if (jsonMatch) {
-    try {
-      const parsed = JSON.parse(jsonMatch[0]);
-      if (Array.isArray(parsed)) {
-        return parsed.map((t: any) => String(t).trim().replace(/^#/, ""));
-      }
-    } catch {}
-  }
-  return text
-    .split(/[,\n]/)
-    .map((t) => t.trim().replace(/^#/, ""))
-    .filter((t) => t.length > 0 && !t.startsWith("请") && !t.startsWith("标签"));
-}
+

@@ -17,12 +17,12 @@ export class Tagger {
 
   constructor(
     private app: App,
-    private client: AIClient,
+    protected client: AIClient,
     private settings: SmartTaggerSettings
   ) {}
 
   updateClient(client: AIClient) {
-    (this as any).client = client;
+    this.client = client;
   }
 
   updateSettings(settings: SmartTaggerSettings) {
@@ -43,24 +43,9 @@ export class Tagger {
 
     try {
       this.isProcessing = true;
-      const content = await this.app.vault.read(file);
-      const body = extractContent(content);
-      const truncated = truncateContent(body, this.settings.maxContentChars);
-
       const existingTags = this.settings.preferExistingTags ? getVaultTags(this.app) : [];
-
-      const template = this.getActiveTemplate();
-      if ("updateTemplate" in this.client) {
-        (this.client as any).updateTemplate(template);
-      }
-
-      const tags = await this.client.generateTags(truncated, {
-        existingTags,
-        preferExisting: this.settings.preferExistingTags,
-        minTags: this.settings.minTags,
-        maxTags: this.settings.maxTags,
-      });
-
+      const tags = await this.generateTagsForSingleFile(file, existingTags);
+      
       if (tags.length === 0) {
         notifyError("AI 未返回有效标签");
         return { success: false, reason: "empty" };
@@ -85,6 +70,23 @@ export class Tagger {
     }
   }
 
+  /** 为单个文件生成标签的核心逻辑 */
+  private async generateTagsForSingleFile(file: TFile, existingTags: string[]): Promise<string[]> {
+    const content = await this.app.vault.read(file);
+    const body = extractContent(content);
+    const truncated = truncateContent(body, this.settings.maxContentChars);
+
+    const template = this.getActiveTemplate();
+    this.client.updateTemplate?.(template);
+
+    return await this.client.generateTags(truncated, {
+      existingTags,
+      preferExisting: this.settings.preferExistingTags,
+      minTags: this.settings.minTags,
+      maxTags: this.settings.maxTags,
+    });
+  }
+
   /** 为文件夹批量生成标签 */
   async generateTagsForFolder(folder: TFolder): Promise<void> {
     if (this.isProcessing) {
@@ -104,6 +106,9 @@ export class Tagger {
     let failed = 0;
 
     try {
+      // 外提循环内的重复计算
+      const existingTags = this.settings.preferExistingTags ? getVaultTags(this.app) : [];
+      
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
 
@@ -115,23 +120,7 @@ export class Tagger {
         notifyProgress(i + 1, files.length);
 
         try {
-          const content = await this.app.vault.read(file);
-          const body = extractContent(content);
-          const truncated = truncateContent(body, this.settings.maxContentChars);
-
-          const existingTags = this.settings.preferExistingTags ? getVaultTags(this.app) : [];
-
-          const template = this.getActiveTemplate();
-          if ("updateTemplate" in this.client) {
-            (this.client as any).updateTemplate(template);
-          }
-
-          const tags = await this.client.generateTags(truncated, {
-            existingTags,
-            preferExisting: this.settings.preferExistingTags,
-            minTags: this.settings.minTags,
-            maxTags: this.settings.maxTags,
-          });
+          const tags = await this.generateTagsForSingleFile(file, existingTags);
 
           if (tags.length > 0) {
             await writeTags(this.app, file, tags);
@@ -139,7 +128,8 @@ export class Tagger {
           } else {
             failed++;
           }
-        } catch {
+        } catch (error) {
+          console.error("[Smart-Tagger] 文件处理失败:", file.path, error);
           failed++;
         }
       }

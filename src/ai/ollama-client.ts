@@ -1,7 +1,7 @@
 import { requestUrl, RequestUrlParam } from "obsidian";
 import { AIClient, PromptOptions, PromptTemplate } from "../types";
 import { renderPrompt } from "./prompts";
-import { parseTagsFromResponse } from "./openai-client";
+import { parseTagsFromResponse } from "./utils";
 
 interface OllamaConfig {
   baseUrl: string;

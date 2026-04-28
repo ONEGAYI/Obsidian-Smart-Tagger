@@ -1,21 +1,4 @@
-export interface PromptTemplate {
-  name: string;
-  system: string;
-  user: string;
-}
-
-const DEFAULT_PROMPT_TEMPLATE: PromptTemplate = {
-  name: "默认模板",
-  system: `你是一个文档标签生成专家。你的任务是为给定的 Markdown 文档内容生成简洁、准确的标签。
-
-规则：
-1. 标签应反映文档的核心主题和关键概念
-2. 标签使用中文，除非是专有名词或技术术语
-3. 标签不需要加 # 前缀
-4. 只返回 JSON 数组格式的标签列表，不要有其他解释
-5. 示例格式：["标签1", "标签2", "标签3"]`,
-  user: `请为以下文档内容生成合适的标签。标签数量：{{minTags}} 到 {{maxTags}} 个。\n\n{{content}}`,
-};
+import { PromptTemplate, DEFAULT_PROMPT_TEMPLATE } from "../types";
 
 interface RenderContext {
   content: string;
