@@ -30,10 +30,10 @@ export function notifyBusy(): void {
   notify("正在处理中，请稍候", 2000);
 }
 
-export function notifyTestConnection(success: boolean, message?: string): void {
+export function notifyTestConnection(success: boolean, error?: string): void {
   if (success) {
     notify("连接测试成功", 2000);
   } else {
-    notify(`连接测试失败${message ? ` - ${message}` : ""}`, 5000);
+    notify(`连接测试失败${error ? ` - ${error}` : ""}`, 5000);
   }
 }

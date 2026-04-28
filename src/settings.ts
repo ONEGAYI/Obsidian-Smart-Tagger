@@ -1,7 +1,6 @@
-import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
+import { App, Plugin, PluginSettingTab, Setting, Notice } from "obsidian";
 import { SmartTaggerSettings, PromptTemplate, DEFAULT_PROMPT_TEMPLATE } from "./types";
 import { getDefaultTemplates, upsertTemplate, deleteTemplate } from "./ai/prompts";
-import { encryptApiKey, decryptApiKey } from "./crypto";
 import { notifyTestConnection } from "./ui/notice";
 
 export class SmartTaggerSettingTab extends PluginSettingTab {
@@ -76,10 +75,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
         })
         .addButton((btn) =>
           btn.setButtonText("保存 Key").onClick(async () => {
-            this.settings.openaiApiKey = await encryptApiKey(
-              this.decryptedApiKey,
-              this.app.vault.adapter.getBasePath?.() ?? ""
-            );
+            this.settings.openaiApiKey = this.decryptedApiKey;
             await this.save();
           })
         );
@@ -128,8 +124,8 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
         btn.setButtonText("测试").onClick(async () => {
           btn.setButtonText("测试中...");
           btn.setDisabled(true);
-          const success = await this.onTestConnection();
-          notifyTestConnection(success);
+          const result = await this.onTestConnection();
+          notifyTestConnection(result.ok, result.error);
           btn.setButtonText("测试");
           btn.setDisabled(false);
         })
@@ -313,15 +309,6 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
   }
 
   async initDecryptedKey(): Promise<void> {
-    if (this.settings.openaiApiKey) {
-      try {
-        this.decryptedApiKey = await decryptApiKey(
-          this.settings.openaiApiKey,
-          this.app.vault.adapter.getBasePath?.() ?? ""
-        );
-      } catch {
-        this.decryptedApiKey = "";
-      }
-    }
+    this.decryptedApiKey = this.settings.openaiApiKey;
   }
 }

@@ -1,4 +1,4 @@
-import { Plugin, TFile, TFolder, Menu } from "obsidian";
+import { Plugin, TFile, TFolder, Menu, Notice } from "obsidian";
 import { SmartTaggerSettings, DEFAULT_SETTINGS, DEFAULT_PROMPT_TEMPLATE } from "./types";
 import { OpenAIClient } from "./ai/openai-client";
 import { OllamaClient } from "./ai/ollama-client";
@@ -63,6 +63,8 @@ export default class SmartTaggerPlugin extends Plugin {
           this.app.vault.adapter.getBasePath?.() ?? ""
         );
       } catch {
+        console.warn("[Smart-Tagger] API Key 解密失败，已清空。请重新输入 API Key。");
+        new Notice("Smart Tagger: API Key 解密失败，请重新输入");
         this.settings.openaiApiKey = "";
       }
     }

@@ -45,15 +45,18 @@ export class OllamaClient implements AIClient {
     return parseTagsFromResponse(text);
   }
 
-  async testConnection(): Promise<boolean> {
+  async testConnection(): Promise<{ ok: boolean; error?: string }> {
     try {
       const resp = await requestUrl({
         url: `${this.config.baseUrl}/api/tags`,
         method: "GET",
       });
-      return resp.json?.models?.length > 0;
-    } catch {
-      return false;
+      const ok = resp.json?.models?.length > 0;
+      return { ok };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error("[Smart-Tagger] Ollama 连接测试失败:", message);
+      return { ok: false, error: message };
     }
   }
 

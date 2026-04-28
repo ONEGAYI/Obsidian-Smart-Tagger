@@ -1,7 +1,7 @@
 /** AI 客户端接口 */
 export interface AIClient {
   generateTags(content: string, options: PromptOptions): Promise<string[]>;
-  testConnection(): Promise<boolean>;
+  testConnection(): Promise<{ ok: boolean; error?: string }>;
   updateTemplate?(template: PromptTemplate): void;
 }
 
