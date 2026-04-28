@@ -1,6 +1,18 @@
+/** 自定义字段定义（从模板 {{key: prompt}} 语法提取） */
+export interface CustomField {
+  key: string;
+  prompt: string;
+}
+
+/** AI 生成结果（包含标签和自定义字段） */
+export interface GenerateResult {
+  tags: string[];
+  fields: Record<string, string>;
+}
+
 /** AI 客户端接口 */
 export interface AIClient {
-  generateTags(content: string, options: PromptOptions): Promise<string[]>;
+  generateTags(content: string, options: PromptOptions): Promise<GenerateResult>;
   testConnection(): Promise<{ ok: boolean; error?: string }>;
   updateTemplate?(template: PromptTemplate): void;
   updateThinking?(enabled: boolean): void;
@@ -35,7 +47,7 @@ export interface SmartTaggerSettings {
   minTags: number;
   maxTags: number;
   preferExistingTags: boolean;
-  skipTaggedFiles: boolean;
+  skipFields: string[];
 
   maxRecursiveDepth: number;
   maxContentChars: number;
@@ -61,7 +73,7 @@ export const DEFAULT_SETTINGS: SmartTaggerSettings = {
   minTags: 3,
   maxTags: 8,
   preferExistingTags: true,
-  skipTaggedFiles: true,
+  skipFields: ["tags"],
 
   maxRecursiveDepth: 1,
   maxContentChars: 4000,
