@@ -1,0 +1,10 @@
+{
+  "id": "smart-tagger",
+  "name": "Smart Tagger",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "使用 AI 为文档自动生成标签",
+  "author": "ONEGAYI",
+  "authorUrl": "",
+  "isDesktopOnly": true
+}
