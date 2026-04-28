@@ -1,7 +1,7 @@
 import { App, TFile, TFolder } from "obsidian";
 import { AIClient, SmartTaggerSettings, PromptTemplate, DEFAULT_PROMPT_TEMPLATE } from "../types";
 import { findTemplate } from "../ai/prompts";
-import { hasTags, extractContent, truncateContent, writeTags } from "./frontmatter";
+import { shouldSkip, extractContent, truncateContent, writeFields } from "./frontmatter";
 import { getVaultTags, invalidateVaultTagsCache } from "./vault-tags";
 import {
   ProgressNotice,
@@ -37,7 +37,7 @@ export class Tagger {
       return { success: false, reason: "busy" };
     }
 
-    if (this.settings.skipTaggedFiles && hasTags(this.app, file)) {
+    if (shouldSkip(this.app, file, this.settings.skipFields)) {
       notifySkipped();
       return { success: false, reason: "skipped" };
     }
@@ -47,21 +47,21 @@ export class Tagger {
     try {
       this.isProcessing = true;
       const existingTags = this.settings.preferExistingTags ? getVaultTags(this.app) : [];
-      const tags = await this.generateTagsForSingleFile(file, existingTags);
+      const result = await this.generateForSingleFile(file, existingTags);
 
-      if (tags.length === 0) {
+      if (result.tags.length === 0) {
         progress.done();
         notifyError("AI 未返回有效标签");
         return { success: false, reason: "empty" };
       }
 
-      await writeTags(this.app, file, tags);
+      await writeFields(this.app, file, result.tags, result.fields);
       invalidateVaultTagsCache();
       progress.done();
-      notifySuccess(tags);
+      notifySuccess(result.tags);
 
       if (this.settings.debugMode) {
-        console.log("[Smart-Tagger] 标签生成成功:", file.path, tags);
+        console.log("[Smart-Tagger] 标签生成成功:", file.path, result.tags, result.fields);
       }
 
       return { success: true };
@@ -77,7 +77,7 @@ export class Tagger {
   }
 
   /** 为单个文件生成标签的核心逻辑 */
-  private async generateTagsForSingleFile(file: TFile, existingTags: string[]): Promise<string[]> {
+  private async generateForSingleFile(file: TFile, existingTags: string[]) {
     const content = await this.app.vault.read(file);
     const body = extractContent(content);
     const truncated = truncateContent(body, this.settings.maxContentChars);
@@ -120,7 +120,7 @@ export class Tagger {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
 
-        if (this.settings.skipTaggedFiles && hasTags(this.app, file)) {
+        if (shouldSkip(this.app, file, this.settings.skipFields)) {
           skipped++;
           processed++;
           progress.update(`正在处理 ${processed}/${files.length}（已跳过 ${skipped}）`);
@@ -130,10 +130,10 @@ export class Tagger {
         progress.update(`正在处理 ${processed + 1}/${files.length} — ${file.basename}`);
 
         try {
-          const tags = await this.generateTagsForSingleFile(file, existingTags);
+          const result = await this.generateForSingleFile(file, existingTags);
 
-          if (tags.length > 0) {
-            await writeTags(this.app, file, tags);
+          if (result.tags.length > 0) {
+            await writeFields(this.app, file, result.tags, result.fields);
             success++;
           } else {
             failed++;
