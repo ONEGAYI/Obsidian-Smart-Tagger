@@ -8,7 +8,7 @@ export function shouldSkip(app: App, file: TFile, fields: string[]): boolean {
   const cache = app.metadataCache.getFileCache(file);
   const fm = cache?.frontmatter;
   if (!fm) return false;
-  return fields.every((field) => fm[field] !== undefined);
+  return fields.every((field) => hasValue(fm[field]));
 }
 
 /**
@@ -16,18 +16,30 @@ export function shouldSkip(app: App, file: TFile, fields: string[]): boolean {
  * - tags: 合并去重
  * - 其他字段: 直接覆盖
  */
+function hasValue(val: unknown): boolean {
+  if (val == null) return false;
+  if (typeof val === "string" && val.trim() === "") return false;
+  if (Array.isArray(val) && val.length === 0) return false;
+  return true;
+}
+
 export async function writeFields(
   app: App,
   file: TFile,
   tags: string[],
-  fields: Record<string, string>
+  fields: Record<string, string>,
+  skipFields: string[] = []
 ): Promise<void> {
   await app.fileManager.processFrontMatter(file, (frontmatter) => {
-    const existing: string[] = frontmatter.tags ?? [];
-    const existingStrs = existing.map(String);
-    frontmatter.tags = [...new Set([...existingStrs, ...tags])];
+    const skipTags = skipFields.includes("tags") && hasValue(frontmatter.tags);
+    if (!skipTags) {
+      const existing: string[] = frontmatter.tags ?? [];
+      const existingStrs = existing.map(String);
+      frontmatter.tags = [...new Set([...existingStrs, ...tags])];
+    }
 
     for (const [key, value] of Object.entries(fields)) {
+      if (skipFields.includes(key) && hasValue(frontmatter[key])) continue;
       frontmatter[key] = value;
     }
   });

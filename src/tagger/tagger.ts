@@ -1,6 +1,6 @@
 import { App, TFile, TFolder } from "obsidian";
 import { AIClient, SmartTaggerSettings, PromptTemplate, DEFAULT_PROMPT_TEMPLATE } from "../types";
-import { findTemplate } from "../ai/prompts";
+import { findTemplate, extractCustomFields } from "../ai/prompts";
 import { shouldSkip, extractContent, truncateContent, writeFields } from "./frontmatter";
 import { getVaultTags, invalidateVaultTagsCache } from "./vault-tags";
 import {
@@ -37,7 +37,8 @@ export class Tagger {
       return { success: false, reason: "busy" };
     }
 
-    if (shouldSkip(this.app, file, this.settings.skipFields)) {
+    const template = this.getActiveTemplate();
+    if (shouldSkip(this.app, file, this.buildSkipCheckFields(template))) {
       notifySkipped();
       return { success: false, reason: "skipped" };
     }
@@ -47,7 +48,7 @@ export class Tagger {
     try {
       this.isProcessing = true;
       const existingTags = this.settings.preferExistingTags ? getVaultTags(this.app) : [];
-      const result = await this.generateForSingleFile(file, existingTags);
+      const result = await this.generateForSingleFile(file, existingTags, template);
 
       if (result.tags.length === 0) {
         progress.done();
@@ -55,7 +56,7 @@ export class Tagger {
         return { success: false, reason: "empty" };
       }
 
-      await writeFields(this.app, file, result.tags, result.fields);
+      await writeFields(this.app, file, result.tags, result.fields, this.settings.skipFields);
       invalidateVaultTagsCache();
       progress.done();
       notifySuccess(result.tags);
@@ -77,12 +78,11 @@ export class Tagger {
   }
 
   /** 为单个文件生成标签的核心逻辑 */
-  private async generateForSingleFile(file: TFile, existingTags: string[]) {
+  private async generateForSingleFile(file: TFile, existingTags: string[], template: PromptTemplate) {
     const content = await this.app.vault.read(file);
     const body = extractContent(content);
     const truncated = truncateContent(body, this.settings.maxContentChars);
 
-    const template = this.getActiveTemplate();
     this.client.updateTemplate?.(template);
 
     return await this.client.generateTags(truncated, {
@@ -116,11 +116,13 @@ export class Tagger {
 
     try {
       const existingTags = this.settings.preferExistingTags ? getVaultTags(this.app) : [];
+      const template = this.getActiveTemplate();
+      const skipCheckFields = this.buildSkipCheckFields(template);
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
 
-        if (shouldSkip(this.app, file, this.settings.skipFields)) {
+        if (shouldSkip(this.app, file, skipCheckFields)) {
           skipped++;
           processed++;
           progress.update(`正在处理 ${processed}/${files.length}（已跳过 ${skipped}）`);
@@ -130,10 +132,10 @@ export class Tagger {
         progress.update(`正在处理 ${processed + 1}/${files.length} — ${file.basename}`);
 
         try {
-          const result = await this.generateForSingleFile(file, existingTags);
+          const result = await this.generateForSingleFile(file, existingTags, template);
 
           if (result.tags.length > 0) {
-            await writeFields(this.app, file, result.tags, result.fields);
+            await writeFields(this.app, file, result.tags, result.fields, this.settings.skipFields);
             success++;
           } else {
             failed++;
@@ -171,6 +173,14 @@ export class Tagger {
     };
     walk(folder, 0);
     return files;
+  }
+
+  /** 构建 skipFields + 模板自定义字段的合并列表 */
+  private buildSkipCheckFields(template: PromptTemplate): string[] {
+    if (this.settings.skipFields.length === 0) return [];
+    const { fields } = extractCustomFields(template.user);
+    const customKeys = fields.map((f) => f.key);
+    return [...new Set([...this.settings.skipFields, ...customKeys])];
   }
 
   /** 获取当前活跃提示词模板 */

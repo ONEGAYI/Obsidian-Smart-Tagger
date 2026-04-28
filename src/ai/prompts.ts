@@ -15,7 +15,7 @@ export interface RenderedPrompt {
 }
 
 /** 从模板文本中提取 {{key: prompt}} 自定义字段 */
-function extractCustomFields(template: string): { cleaned: string; fields: CustomField[] } {
+export function extractCustomFields(template: string): { cleaned: string; fields: CustomField[] } {
   const fields: CustomField[] = [];
   const regex = /\{\{([^{}:]+):([^{}]+)\}\}/g;
   let match: RegExpExecArray | null;
