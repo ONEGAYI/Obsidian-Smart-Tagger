@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "node esbuild.config.mjs production",
+    "deploy": "npm run build && node scripts/deploy.mjs",
     "test": "jest"
   },
   "devDependencies": {
