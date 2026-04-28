@@ -1,6 +1,5 @@
 import { CustomField, GenerateResult } from "../types";
 
-/** 解析 AI 返回的纯标签数组 */
 export function parseTagsFromResponse(text: string): string[] {
   const jsonMatch = text.match(/\[[\s\S]*?\]/);
   if (jsonMatch) {
@@ -19,7 +18,6 @@ export function parseTagsFromResponse(text: string): string[] {
     .filter((t) => t.length > 0 && !t.startsWith("请") && !t.startsWith("标签"));
 }
 
-/** 统一解析 AI 响应：有自定义字段时解析 JSON 对象，否则回退到数组解析 */
 export function parseResponse(text: string, customFields: CustomField[]): GenerateResult {
   if (customFields.length === 0) {
     return { tags: parseTagsFromResponse(text), fields: {} };

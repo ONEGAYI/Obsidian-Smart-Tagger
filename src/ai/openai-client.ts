@@ -1,7 +1,7 @@
 import { requestUrl, RequestUrlParam } from "obsidian";
-import { AIClient, PromptOptions, PromptTemplate } from "../types";
+import { AIClient, PromptOptions, PromptTemplate, GenerateResult } from "../types";
 import { renderPrompt } from "./prompts";
-import { parseTagsFromResponse } from "./utils";
+import { parseResponse } from "./utils";
 
 interface OpenAIConfig {
   baseUrl: string;
