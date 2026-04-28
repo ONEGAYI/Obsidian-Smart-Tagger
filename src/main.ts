@@ -56,6 +56,13 @@ export default class SmartTaggerPlugin extends Plugin {
     const data = await this.loadData();
     this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
 
+    // 迁移：skipTaggedFiles → skipFields
+    const legacy = data as Record<string, unknown>;
+    if (legacy.skipTaggedFiles !== undefined && legacy.skipFields === undefined) {
+      this.settings.skipFields = legacy.skipTaggedFiles ? ["tags"] : [];
+      await this.saveSettings();
+    }
+
     if (this.settings.openaiApiKey) {
       try {
         this.settings.openaiApiKey = await decryptApiKey(
