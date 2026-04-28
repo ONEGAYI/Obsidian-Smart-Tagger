@@ -1,7 +1,7 @@
 import { requestUrl, RequestUrlParam } from "obsidian";
-import { AIClient, PromptOptions, PromptTemplate } from "../types";
+import { AIClient, PromptOptions, PromptTemplate, GenerateResult } from "../types";
 import { renderPrompt } from "./prompts";
-import { parseTagsFromResponse } from "./utils";
+import { parseResponse } from "./utils";
 
 interface OllamaConfig {
   baseUrl: string;
@@ -28,7 +28,7 @@ export class OllamaClient implements AIClient {
     this.enableThinking = enabled;
   }
 
-  async generateTags(content: string, options: PromptOptions): Promise<string[]> {
+  async generateTags(content: string, options: PromptOptions): Promise<GenerateResult> {
     const prompt = renderPrompt(this.template, {
       content,
       minTags: options.minTags,
@@ -52,7 +52,7 @@ export class OllamaClient implements AIClient {
 
     const response = await this.request("/api/chat", body);
     const text = response.message?.content ?? "";
-    return parseTagsFromResponse(text);
+    return parseResponse(text, prompt.customFields);
   }
 
   async testConnection(): Promise<{ ok: boolean; error?: string }> {

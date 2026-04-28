@@ -29,7 +29,7 @@ export class OpenAIClient implements AIClient {
     this.enableThinking = enabled;
   }
 
-  async generateTags(content: string, options: PromptOptions): Promise<string[]> {
+  async generateTags(content: string, options: PromptOptions): Promise<GenerateResult> {
     const prompt = renderPrompt(this.template, {
       content,
       minTags: options.minTags,
@@ -53,7 +53,7 @@ export class OpenAIClient implements AIClient {
 
     const response = await this.request("/v1/chat/completions", body);
     const text = response.choices?.[0]?.message?.content ?? "";
-    return parseTagsFromResponse(text);
+    return parseResponse(text, prompt.customFields);
   }
 
   async testConnection(): Promise<{ ok: boolean; error?: string }> {
