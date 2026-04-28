@@ -1,7 +1,14 @@
 import { App, Plugin, PluginSettingTab, Setting, Notice } from "obsidian";
-import { SmartTaggerSettings, PromptTemplate, DEFAULT_PROMPT_TEMPLATE } from "./types";
+import { SmartTaggerSettings, PromptTemplate, DEFAULT_PROMPT_TEMPLATE, DEFAULT_EXCLUDE_PATTERNS, DEFAULT_EXCLUDE_FM_KEYS } from "./types";
 import { getDefaultTemplates, upsertTemplate, deleteTemplate } from "./ai/prompts";
 import { notifyTestConnection } from "./ui/notice";
+
+function splitCsv(value: string): string[] {
+  return value
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
 
 export class SmartTaggerSettingTab extends PluginSettingTab {
   private settings: SmartTaggerSettings;
@@ -29,6 +36,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
     containerEl.createEl("h2", { text: "Smart Tagger 设置" });
     this.renderAISection(containerEl);
     this.renderStrategySection(containerEl);
+    this.renderExcludeSection(containerEl);
     this.renderAdvancedSection(containerEl);
     this.renderPromptSection(containerEl);
   }
@@ -181,10 +189,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
           .setPlaceholder("tags")
           .setValue(this.settings.skipFields.join(", "))
           .onChange(async (value) => {
-            this.settings.skipFields = value
-              .split(",")
-              .map((s) => s.trim())
-              .filter((s) => s.length > 0);
+            this.settings.skipFields = splitCsv(value);
             await this.save();
           })
       );
@@ -215,6 +220,47 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
             this.settings.maxContentChars = value;
             await this.save();
           })
+      );
+  }
+
+  private renderExcludeSection(containerEl: HTMLElement): void {
+    containerEl.createEl("h3", { text: "文件排除规则" });
+
+    new Setting(containerEl)
+      .setName("排除路径规则")
+      .setDesc("逗号分隔通配符。匹配文件路径的文件将被跳过。* 匹配任意非 / 字符。如：*.excalidraw.md, templates/*")
+      .addText((text) =>
+        text
+          .setPlaceholder("*.excalidraw.md")
+          .setValue(this.settings.excludePatterns.join(", "))
+          .onChange(async (value) => {
+            this.settings.excludePatterns = splitCsv(value);
+            await this.save();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("排除 frontmatter 键")
+      .setDesc("逗号分隔键名。frontmatter 中包含这些键的文件将被跳过。如：kanban-plugin, excalidraw-plugin")
+      .addText((text) =>
+        text
+          .setPlaceholder("kanban-plugin")
+          .setValue(this.settings.excludeFrontmatterKeys.join(", "))
+          .onChange(async (value) => {
+            this.settings.excludeFrontmatterKeys = splitCsv(value);
+            await this.save();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("恢复默认排除规则")
+      .addButton((btn) =>
+        btn.setButtonText("恢复默认").setWarning(true).onClick(async () => {
+          this.settings.excludePatterns = [...DEFAULT_EXCLUDE_PATTERNS];
+          this.settings.excludeFrontmatterKeys = [...DEFAULT_EXCLUDE_FM_KEYS];
+          await this.save();
+          this.display();
+        })
       );
   }
 

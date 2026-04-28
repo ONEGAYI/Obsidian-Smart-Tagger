@@ -1,7 +1,7 @@
 import { App, TFile, TFolder } from "obsidian";
 import { AIClient, SmartTaggerSettings, PromptTemplate, DEFAULT_PROMPT_TEMPLATE } from "../types";
 import { findTemplate, extractCustomFields } from "../ai/prompts";
-import { shouldSkip, extractContent, truncateContent, writeFields } from "./frontmatter";
+import { shouldSkip, extractContent, truncateContent, writeFields, isPathExcluded, hasExcludedKey } from "./frontmatter";
 import { getVaultTags, invalidateVaultTagsCache } from "./vault-tags";
 import {
   ProgressNotice,
@@ -35,6 +35,11 @@ export class Tagger {
     if (this.isProcessing) {
       notifyBusy();
       return { success: false, reason: "busy" };
+    }
+
+    if (this.isFileExcluded(file)) {
+      notifySkipped();
+      return { success: false, reason: "excluded" };
     }
 
     const template = this.getActiveTemplate();
@@ -122,6 +127,13 @@ export class Tagger {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
 
+        if (this.isFileExcluded(file)) {
+          skipped++;
+          processed++;
+          progress.update(`正在处理 ${processed}/${files.length}（已跳过 ${skipped}）`);
+          continue;
+        }
+
         if (shouldSkip(this.app, file, skipCheckFields)) {
           skipped++;
           processed++;
@@ -173,6 +185,13 @@ export class Tagger {
     };
     walk(folder, 0);
     return files;
+  }
+
+  private isFileExcluded(file: TFile): boolean {
+    return (
+      isPathExcluded(file.path, this.settings.excludePatterns) ||
+      hasExcludedKey(this.app, file, this.settings.excludeFrontmatterKeys)
+    );
   }
 
   /** 构建 skipFields + 模板自定义字段的合并列表 */

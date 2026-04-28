@@ -33,6 +33,12 @@ export interface PromptTemplate {
   user: string;
 }
 
+/** 默认排除路径规则 */
+export const DEFAULT_EXCLUDE_PATTERNS = ["*.excalidraw.md"];
+
+/** 默认排除 frontmatter 键 */
+export const DEFAULT_EXCLUDE_FM_KEYS = ["kanban-plugin", "excalidraw-plugin"];
+
 /** 插件设置 */
 export interface SmartTaggerSettings {
   aiMode: "openai" | "ollama";
@@ -48,6 +54,8 @@ export interface SmartTaggerSettings {
   maxTags: number;
   preferExistingTags: boolean;
   skipFields: string[];
+  excludePatterns: string[];
+  excludeFrontmatterKeys: string[];
 
   maxRecursiveDepth: number;
   maxContentChars: number;
@@ -74,6 +82,8 @@ export const DEFAULT_SETTINGS: SmartTaggerSettings = {
   maxTags: 8,
   preferExistingTags: true,
   skipFields: ["tags"],
+  excludePatterns: [...DEFAULT_EXCLUDE_PATTERNS],
+  excludeFrontmatterKeys: [...DEFAULT_EXCLUDE_FM_KEYS],
 
   maxRecursiveDepth: 1,
   maxContentChars: 4000,

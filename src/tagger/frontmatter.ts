@@ -1,5 +1,31 @@
 import { App, TFile } from "obsidian";
 
+/** 简单通配符匹配：* 匹配非 / 字符，? 匹配单个非 / 字符 */
+export function matchGlob(pattern: string, path: string): boolean {
+  const re = new RegExp(
+    "^" +
+      pattern
+        .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+        .replace(/\*/g, "[^/]*")
+        .replace(/\?/g, "[^/]") +
+      "$"
+  );
+  return re.test(path);
+}
+
+/** 检查文件路径是否匹配任一排除规则 */
+export function isPathExcluded(filePath: string, patterns: string[]): boolean {
+  return patterns.some((p) => matchGlob(p, filePath));
+}
+
+/** 检查文件 frontmatter 是否包含任一排除键 */
+export function hasExcludedKey(app: App, file: TFile, keys: string[]): boolean {
+  if (keys.length === 0) return false;
+  const fm = app.metadataCache.getFileCache(file)?.frontmatter;
+  if (!fm) return false;
+  return keys.some((key) => key in fm);
+}
+
 /**
  * 检查文件 frontmatter 中指定字段是否都已存在
  */
