@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { SmartTaggerSettings, PromptTemplate, DEFAULT_PROMPT_TEMPLATE } from "./types";
 import { getDefaultTemplates, upsertTemplate, deleteTemplate } from "./ai/prompts";
 import { encryptApiKey, decryptApiKey } from "./crypto";
@@ -12,11 +12,12 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
 
   constructor(
     app: App,
+    plugin: Plugin,
     settings: SmartTaggerSettings,
     onSave: (settings: SmartTaggerSettings) => Promise<void>,
     onTestConnection: () => Promise<boolean>
   ) {
-    super(app, "");
+    super(app, plugin);
     this.settings = { ...settings };
     this.onSave = onSave;
     this.onTestConnection = onTestConnection;

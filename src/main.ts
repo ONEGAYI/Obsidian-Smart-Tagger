@@ -30,6 +30,7 @@ export default class SmartTaggerPlugin extends Plugin {
 
     const settingTab = new SmartTaggerSettingTab(
       this.app,
+      this,
       this.settings,
       async (settings) => {
         this.settings = settings;
