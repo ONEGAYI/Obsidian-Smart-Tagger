@@ -1,0 +1,17 @@
+.smart-tagger-prompt-area {
+  width: 100%;
+  padding: 8px;
+  font-family: var(--font-monospace);
+  font-size: 0.85em;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  resize: vertical;
+}
+
+.smart-tagger-hint {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  margin: 4px 0 16px 0;
+}
