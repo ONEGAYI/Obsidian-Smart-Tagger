@@ -1,4 +1,4 @@
-import { App, Plugin, PluginSettingTab, Setting, Notice } from "obsidian";
+import { App, Plugin, PluginSettingTab, Setting, Notice, Modal, setIcon } from "obsidian";
 import { SmartTaggerSettings, PromptTemplate, DEFAULT_PROMPT_TEMPLATE, DEFAULT_EXCLUDE_PATTERNS, DEFAULT_EXCLUDE_FM_KEYS } from "./types";
 import { getDefaultTemplates, upsertTemplate, deleteTemplate } from "./ai/prompts";
 import { notifyTestConnection } from "./ui/notice";
@@ -8,6 +8,62 @@ function splitCsv(value: string): string[] {
     .split(",")
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
+}
+
+class RuleEditModal extends Modal {
+  constructor(
+    app: App,
+    private title: string,
+    private rules: string[],
+    private placeholder: string,
+    private onSave: (rules: string[]) => Promise<void>
+  ) {
+    super(app);
+  }
+
+  onOpen() {
+    const { contentEl } = this;
+    contentEl.empty();
+    contentEl.createEl("h2", { text: this.title });
+
+    contentEl.createDiv({ cls: "smart-tagger-rule-hint", text: "ℹ️ 使用 gitignore 语法" }, (el) => {
+      el.setAttribute(
+        "aria-label",
+        "无 / → 匹配任意深度的文件名（如 CLAUDE.md、*.log）\n" +
+        "有 / → 匹配 vault 根目录起的路径（如 templates/*）\n" +
+        "** → 匹配零或多个目录层级（如 **/test/*.md、src/**/utils.ts、logs/**）\n" +
+        "* → 匹配非 / 字符，? → 匹配单个非 / 字符"
+      );
+    });
+
+    const textarea = contentEl.createEl("textarea", {
+      cls: "smart-tagger-prompt-area",
+    });
+    textarea.value = this.rules.join("\n");
+    textarea.rows = 10;
+    textarea.placeholder = this.placeholder;
+
+    new Setting(contentEl)
+      .addButton((btn) =>
+        btn.setButtonText("保存").setCta().onClick(async () => {
+          const newRules = textarea.value
+            .split("\n")
+            .map((s) => s.trim())
+            .filter((s) => s.length > 0);
+          await this.onSave(newRules);
+          this.close();
+        })
+      )
+      .addButton((btn) =>
+        btn.setButtonText("取消").onClick(() => {
+          this.close();
+        })
+      );
+  }
+
+  onClose() {
+    this.contentEl.empty();
+  }
 }
 
 export class SmartTaggerSettingTab extends PluginSettingTab {
@@ -228,29 +284,60 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("排除路径规则")
-      .setDesc("逗号分隔通配符。匹配文件路径的文件将被跳过。* 匹配任意非 / 字符。如：*.excalidraw.md, templates/*")
-      .addText((text) =>
-        text
-          .setPlaceholder("*.excalidraw.md")
-          .setValue(this.settings.excludePatterns.join(", "))
-          .onChange(async (value) => {
-            this.settings.excludePatterns = splitCsv(value);
-            await this.save();
-          })
-      );
+      .setDesc(
+        this.settings.excludePatterns.length > 0
+          ? `当前：${this.settings.excludePatterns.join("、")}`
+          : "未配置规则"
+      )
+      .addButton((btn) => {
+        btn.buttonEl.empty();
+        setIcon(btn.buttonEl, "pencil", 16);
+        btn.buttonEl.createSpan({ text: " 编辑" });
+        btn.onClick(() => {
+          new RuleEditModal(
+            this.app,
+            "排除路径规则",
+            this.settings.excludePatterns,
+            "每行一条规则，语法类似 .gitignore：\n" +
+            "*.excalidraw.md     → 任意深度的匹配文件\n" +
+            "templates/*         → 仅根目录下 templates/\n" +
+            "**/CLAUDE.md        → 任意深度的 CLAUDE.md\n" +
+            "src/**/test.ts      → src 下任意深度的 test.ts\n" +
+            "logs/**             → logs 目录下所有文件",
+            async (rules) => {
+              this.settings.excludePatterns = rules;
+              await this.save();
+              this.display();
+            }
+          ).open();
+        });
+      });
 
     new Setting(containerEl)
       .setName("排除 frontmatter 键")
-      .setDesc("逗号分隔键名。frontmatter 中包含这些键的文件将被跳过。如：kanban-plugin, excalidraw-plugin")
-      .addText((text) =>
-        text
-          .setPlaceholder("kanban-plugin")
-          .setValue(this.settings.excludeFrontmatterKeys.join(", "))
-          .onChange(async (value) => {
-            this.settings.excludeFrontmatterKeys = splitCsv(value);
-            await this.save();
-          })
-      );
+      .setDesc(
+        this.settings.excludeFrontmatterKeys.length > 0
+          ? `当前：${this.settings.excludeFrontmatterKeys.join("、")}`
+          : "未配置规则"
+      )
+      .addButton((btn) => {
+        btn.buttonEl.empty();
+        setIcon(btn.buttonEl, "pencil", 16);
+        btn.buttonEl.createSpan({ text: " 编辑" });
+        btn.onClick(() => {
+          new RuleEditModal(
+            this.app,
+            "排除 frontmatter 键",
+            this.settings.excludeFrontmatterKeys,
+            "每行一个 frontmatter 键名。如：\nkanban-plugin\nexcalidraw-plugin",
+            async (rules) => {
+              this.settings.excludeFrontmatterKeys = rules;
+              await this.save();
+              this.display();
+            }
+          ).open();
+        });
+      });
 
     new Setting(containerEl)
       .setName("恢复默认排除规则")

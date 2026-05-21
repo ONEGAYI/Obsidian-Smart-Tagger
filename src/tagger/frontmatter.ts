@@ -1,16 +1,47 @@
 import { App, TFile } from "obsidian";
 
-/** 简单通配符匹配：* 匹配非 / 字符，? 匹配单个非 / 字符 */
-export function matchGlob(pattern: string, path: string): boolean {
-  const re = new RegExp(
-    "^" +
-      pattern
-        .replace(/[.+^${}()|[\]\\]/g, "\\$&")
-        .replace(/\*/g, "[^/]*")
-        .replace(/\?/g, "[^/]") +
-      "$"
-  );
-  return re.test(path);
+/** 将 gitignore 风格通配符转为正则 */
+function globToRegex(pattern: string): RegExp {
+  let p = pattern;
+
+  // 占位符保护 ** 不被后续 * 替换污染
+  const MID   = "\x01"; // /**/
+  const LEAD  = "\x02"; // **/ at start
+  const TRAIL = "\x03"; // /** at end
+  const ANY   = "\x04"; // standalone **
+
+  p = p.replace(/\/\*\*\//g, "/" + MID);
+  p = p.replace(/^\*\*\//, LEAD);
+  p = p.replace(/\/\*\*$/, "/" + TRAIL);
+  p = p.replace(/\*\*/g, ANY);
+
+  // 转义正则特殊字符（保留 * 和 ?）
+  p = p.replace(/[.+^${}()|[\]\\]/g, "\\$&");
+
+  p = p.replace(/\*/g, "[^/]*");
+  p = p.replace(/\?/g, "[^/]");
+
+  p = p.replace(/\x01/g, "(.+/)?");
+  p = p.replace(/\x02/g, "(.+/)?");
+  p = p.replace(/\x03/g, ".*");
+  p = p.replace(/\x04/g, ".*");
+
+  return new RegExp("^" + p + "$");
+}
+
+/** Gitignore 风格通配符匹配 */
+export function matchGlob(pattern: string, filePath: string): boolean {
+  const hasSlash = pattern.includes("/");
+
+  if (!hasSlash) {
+    // 无 / → 匹配任意深度的文件名（basename）
+    const basename = filePath.split("/").pop() || filePath;
+    return globToRegex(pattern).test(basename);
+  }
+
+  // 有 / → 匹配完整路径（去掉前导 / 视为 vault 根起）
+  const normalized = pattern.startsWith("/") ? pattern.slice(1) : pattern;
+  return globToRegex(normalized).test(filePath);
 }
 
 /** 检查文件路径是否匹配任一排除规则 */
