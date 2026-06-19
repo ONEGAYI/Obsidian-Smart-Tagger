@@ -55,6 +55,6 @@
 - 文件排除规则统一为 gitignore 语法，设置界面改为弹窗多行编辑器，便于维护复杂规则
 
 <!-- 变更链接 -->
-[1.1.1]: https://github.com/ONEGAYI/Obsidian-Smart-Tagger/compare/v1.1.0...v1.1.1
+[1.1.1]: https://github.com/ONEGAYI/Obsidian-Smart-Tagger/compare/v1.1.0...1.1.1
 [1.1.0]: https://github.com/ONEGAYI/Obsidian-Smart-Tagger/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ONEGAYI/Obsidian-Smart-Tagger/releases/tag/v1.0.0

@@ -86,7 +86,9 @@
 
 ## 发布规范
 
-发布前确认版本号三处一致：`manifest.json` 的 `version`、`package.json` 的 `version`、即将创建的 git tag（形如 `vX.Y.Z`）。
+发布前确认版本号三处一致：`manifest.json` 的 `version`、`package.json` 的 `version`、即将创建的 git tag（形如 `X.Y.Z`）。
+
+> ⚠️ **tag 不带 `v` 前缀**：Obsidian 社区平台要求 release tag 与 `manifest.json` 的 `version` 完全一致，**必须是 `1.0.0` 而非 `v1.0.0`**。带 `v` 前缀会导致提交审核时报 `No release matches your manifest version`。
 
 ### 完整发布流程
 
@@ -98,7 +100,7 @@
    - 必须引用对应的 PR 编号
    - 使用 "Keep a CHANGELOG" 格式编写
    - **版本总结**：版本标题（`## [x.y.z]`）与第一个 `###` 分类之间插入 1-2 句话的总结段落，概括本版本核心变更
-   - **变更链接**：底部 `<!-- 变更链接 -->` 处追加链接，首个版本用 `/commits/vX.Y.Z`，后续版本用 `/compare/v旧...v新`
+   - **变更链接**：底部 `<!-- 变更链接 -->` 处追加链接，首个版本用 `/commits/X.Y.Z`，后续版本用 `/compare/旧...新`（tag 名不带 v 前缀）
 3. **更新版本号**：同步修改以下三处为同一新版本号
    - `manifest.json` 的 `version`
    - `package.json` 的 `version`
@@ -107,10 +109,10 @@
 5. **构建**：执行 `npm run build` 生成最新的 `main.js`
 6. **提交**：将上述所有变更（CHANGELOG、版本号、规则文件、`main.js` 产物）作为一次提交，提交信息使用中文 `类型: 简述` 格式，正文分模块列变更
 7. **打 tag 并推送**：
-   - `git tag vX.Y.Z`（tag 必须等于 `manifest.json` 的 `version`）
+   - `git tag X.Y.Z`（tag 必须等于 `manifest.json` 的 `version`，**不带 `v` 前缀**）
    - `git push && git push --tags`
 8. **创建 GitHub Release**：
-   - `gh release create vX.Y.Z <资产文件> --title "vX.Y.Z" --notes "..."`
+   - `gh release create X.Y.Z <资产文件> --title "X.Y.Z" --notes "..."`
    - **`--notes` 必须包含该版本完整的 CHANGELOG 内容**（从版本总结到所有分类条目），不要只写「详见 CHANGELOG」
    - **资产文件范围严格限定为 3 个**（见下方）
 9. **社区目录更新**：登录 [community.obsidian.md](https://community.obsidian.md) 开发者仪表板，关联 GitHub 账号、选择仓库与对应 release，提交新版本审核。社区目录已从 `obsidianmd/obsidian-releases` PR 流程迁移至该平台，**不要再向 obsidian-releases 开 PR**。
@@ -127,7 +129,7 @@ Obsidian 插件的 GitHub Release **只能且必须**包含以下 3 个文件，
 
 > 创建 release 命令示例：
 > ```bash
-> gh release create vX.Y.Z main.js manifest.json styles.css --title "vX.Y.Z" --notes "..."
+> gh release create X.Y.Z main.js manifest.json styles.css --title "X.Y.Z" --notes "..."
 > ```
 
 ---
