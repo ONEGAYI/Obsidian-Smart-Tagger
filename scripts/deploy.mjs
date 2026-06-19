@@ -6,7 +6,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, "..");
 
 const targets = [
-  "D:\\Documents\\06-依赖文件\\Obsidian-configs\\.obsidian\\plugins\\smart-tagger",
+  "D:\\Documents\\06-依赖文件\\Obsidian-configs\\.obsidian\\plugins\\onegayi-smart-tagger",
 ];
 
 const files = ["main.js", "manifest.json", "styles.css"];

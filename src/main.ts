@@ -117,7 +117,7 @@ export default class SmartTaggerPlugin extends Plugin {
 
   private registerCommands(): void {
     this.addCommand({
-      id: "smart-tagger:tag-current-file",
+      id: "onegayi-smart-tagger:tag-current-file",
       name: "为当前文件生成标签",
       callback: () => {
         const file = this.app.workspace.getActiveFile();
@@ -127,7 +127,7 @@ export default class SmartTaggerPlugin extends Plugin {
     });
 
     this.addCommand({
-      id: "smart-tagger:tag-current-folder",
+      id: "onegayi-smart-tagger:tag-current-folder",
       name: "为当前文件夹所有文件生成标签",
       callback: () => {
         const file = this.app.workspace.getActiveFile();

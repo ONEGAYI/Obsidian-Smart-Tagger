@@ -3,6 +3,24 @@
   "version": "1.0.0",
   "description": "使用 AI 为 Obsidian 文档自动生成标签",
   "main": "main.js",
+  "license": "MIT",
+  "keywords": [
+    "obsidian",
+    "obsidian-plugin",
+    "ai",
+    "tags",
+    "auto-tagger",
+    "openai",
+    "ollama"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ONEGAYI/Obsidian-Smart-Tagger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ONEGAYI/Obsidian-Smart-Tagger/issues"
+  },
+  "homepage": "https://github.com/ONEGAYI/Obsidian-Smart-Tagger#readme",
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "node esbuild.config.mjs production",

@@ -1,6 +1,12 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+本文件为 Claude Code (claude.ai/code) 在本仓库工作时的指引。通用规则见：
+
+@AGENTS.md
+
+下文仅补充本项目专属信息。
+
+---
 
 ## 项目概述
 
@@ -58,6 +64,8 @@ src/
 
 ## 关键约定
 
+- **插件 id**：`onegayi-smart-tagger`（避免与社区插件 `smart-tagger` 冲突）。命令 id 前缀同为 `onegayi-smart-tagger:`。
+- **不可改动**：`src/crypto.ts` 中的 `SALT` 常量（`smart-tagger-salt-v1`），改了会让所有已加密的 API Key 解密失败。
 - **AI 客户端接口**：`AIClient`（`types.ts`）— 两个实现均遵循此接口，新增 AI 后端需实现 `generateTags` 和 `testConnection`
 - **设置持久化**：API Key 加密存储（`crypto.ts`），其余设置明文 JSON
 - **Obsidian API 限制**：使用 `requestUrl` 而非 `fetch`（Obsidian 环境兼容性）；`processFrontMatter` 用于原子性 frontmatter 修改
