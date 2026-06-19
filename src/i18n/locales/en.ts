@@ -10,16 +10,16 @@ export const en = {
     busy: "Processing, please wait",
     testSuccess: "Connection test succeeded",
     testFailed: "Connection test failed{error}",
-    decryptFailed: "Smart Tagger: API Key decryption failed, please re-enter",
+    decryptFailed: "Smart Tagger AI: API Key decryption failed, please re-enter",
   },
   command: {
     tagFile: "Generate tags for current file",
     tagFolder: "Generate tags for all files in current folder",
-    menuTagFile: "Smart Tagger: Generate tags for this file",
-    menuTagFolder: "Smart Tagger: Generate tags for this folder",
+    menuTagFile: "Smart Tagger AI: Generate tags for this file",
+    menuTagFolder: "Smart Tagger AI: Generate tags for this folder",
   },
   setting: {
-    title: "Smart Tagger Settings",
+    title: "Smart Tagger AI Settings",
     // AI service connection
     aiSection: "AI Service Connection",
     aiMode: "AI Mode",

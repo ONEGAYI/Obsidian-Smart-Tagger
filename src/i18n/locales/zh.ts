@@ -10,16 +10,16 @@ export const zh = {
     busy: "正在处理中，请稍候",
     testSuccess: "连接测试成功",
     testFailed: "连接测试失败{error}",
-    decryptFailed: "Smart Tagger: API Key 解密失败，请重新输入",
+    decryptFailed: "Smart Tagger AI: API Key 解密失败，请重新输入",
   },
   command: {
     tagFile: "为当前文件生成标签",
     tagFolder: "为当前文件夹所有文件生成标签",
-    menuTagFile: "Smart Tagger: 为该文件生成标签",
-    menuTagFolder: "Smart Tagger: 为该文件夹生成标签",
+    menuTagFile: "Smart Tagger AI: 为该文件生成标签",
+    menuTagFolder: "Smart Tagger AI: 为该文件夹生成标签",
   },
   setting: {
-    title: "Smart Tagger 设置",
+    title: "Smart Tagger AI 设置",
     // AI 服务连接
     aiSection: "AI 服务连接",
     aiMode: "AI 模式",

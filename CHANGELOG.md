@@ -1,8 +1,20 @@
 # Changelog
 
-本文件记录 Obsidian Smart Tagger 的所有显著变更。
+本文件记录 Obsidian Smart Tagger AI 的所有显著变更。
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+
+## [1.1.1] - 2026-06-19
+
+修复插件显示名与社区目录已有插件重名导致无法提交审核的问题。
+
+### Bug 修复
+
+- 插件显示名（`manifest.json` 的 `name`）由 `Smart Tagger` 改为 `Smart Tagger AI`，避免与社区目录中 Johan Denoyer 的同名插件冲突（社区平台同时校验 id 与 name 的唯一性）
+
+### 其他改进
+
+- 统一全项目品牌名为 `Smart Tagger AI`：通知前缀、右键菜单项、设置面板标题、README、i18n 字典均同步更新；日志前缀 `[Smart-Tagger]`、命令 id 前缀 `smart-tagger:` 等内部技术标识保持不变
 
 ## [1.1.0] - 2026-06-19
 
@@ -43,5 +55,6 @@
 - 文件排除规则统一为 gitignore 语法，设置界面改为弹窗多行编辑器，便于维护复杂规则
 
 <!-- 变更链接 -->
+[1.1.1]: https://github.com/ONEGAYI/Obsidian-Smart-Tagger/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/ONEGAYI/Obsidian-Smart-Tagger/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ONEGAYI/Obsidian-Smart-Tagger/releases/tag/v1.0.0

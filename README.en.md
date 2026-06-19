@@ -1,6 +1,6 @@
 English | [中文](./README.md)
 
-# Obsidian Smart Tagger
+# Obsidian Smart Tagger AI
 
 > A lightweight Obsidian plugin that auto-generates tags for your notes and writes them into frontmatter. Supports both OpenAI-compatible APIs and Ollama.
 
@@ -25,14 +25,14 @@ English | [中文](./README.md)
 
 ### Option 1: Community Plugin Directory (Recommended)
 
-> The plugin has been submitted to the Obsidian Community directory. Once approved, install it via **Settings → Community plugins → Browse** by searching for **Smart Tagger**.
+> The plugin has been submitted to the Obsidian Community directory. Once approved, install it via **Settings → Community plugins → Browse** by searching for **Smart Tagger AI**.
 
 ### Option 2: Manual Installation
 
 1. Download `main.js`, `manifest.json`, and `styles.css` from the [Releases](https://github.com/ONEGAYI/Obsidian-Smart-Tagger/releases) page
 2. Create the directory `.obsidian/plugins/onegayi-smart-tagger/` in your vault
 3. Place the three files into that directory
-4. In Obsidian, go to **Settings → Community plugins**, toggle off and on **Community plugins**, then enable **Smart Tagger**
+4. In Obsidian, go to **Settings → Community plugins**, toggle off and on **Community plugins**, then enable **Smart Tagger AI**
 
 ### Option 3: BRAT (Pre-release Testing)
 
@@ -43,7 +43,7 @@ Use the [BRAT plugin](https://github.com/TfTHacker/obsidian42-brat) to add this 
 1. **Configure the AI backend** — Open plugin settings, choose OpenAI-compatible or Ollama mode, and fill in the API URL, key, and model name
 2. **Pick a prompt template** — Use the default, or customize the system and user prompts in settings
 3. **Generate tags** — Pick any of these:
-   - Command palette (`Ctrl/Cmd + P`): run **"Smart Tagger: 为当前文件生成标签"**
+   - Command palette (`Ctrl/Cmd + P`): run **"Smart Tagger AI: 为当前文件生成标签"**
    - Right-click a file in the file explorer → **"为该文件生成标签"**
    - Right-click a folder → **"为该文件夹生成标签"** (batch)
 

@@ -1,7 +1,7 @@
 import { Notice } from "obsidian";
 import { t } from "../i18n";
 
-const PREFIX = "Smart Tagger";
+const PREFIX = "Smart Tagger AI";
 const SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
 function notify(message: string, timeout: number = 3000): void {

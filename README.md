@@ -1,6 +1,6 @@
 [English](./README.en.md) | 中文
 
-# Obsidian Smart Tagger
+# Obsidian Smart Tagger AI
 
 > 使用 AI 为 Obsidian 文档自动生成标签，并写入 frontmatter 的轻量插件。支持 OpenAI 兼容 API 与 Ollama 双模式。
 
@@ -25,14 +25,14 @@
 
 ### 方式一：社区插件市场（推荐）
 
-> 插件已提交 Obsidian 社区目录，审核通过后可通过「设置 → 第三方插件 → 社区插件市场」搜索 **Smart Tagger** 安装。
+> 插件已提交 Obsidian 社区目录，审核通过后可通过「设置 → 第三方插件 → 社区插件市场」搜索 **Smart Tagger AI** 安装。
 
 ### 方式二：手动安装
 
 1. 从 [Releases](https://github.com/ONEGAYI/Obsidian-Smart-Tagger/releases) 下载 `main.js`、`manifest.json`、`styles.css`
 2. 在 vault 中创建目录 `.obsidian/plugins/onegayi-smart-tagger/`
 3. 将三个文件放入该目录
-4. Obsidian 中「设置 → 第三方插件」关闭再开启「社区插件」，启用 **Smart Tagger**
+4. Obsidian 中「设置 → 第三方插件」关闭再开启「社区插件」，启用 **Smart Tagger AI**
 
 ### 方式三：BRAT（灰度测试）
 
@@ -43,7 +43,7 @@
 1. **配置 AI 后端** — 打开插件设置，选择 OpenAI 兼容或 Ollama 模式，填入 API 地址、密钥、模型名
 2. **选择提示词模板** — 使用默认模板，或在设置中自定义系统提示词与用户提示词
 3. **生成标签** — 任选其一：
-   - 命令面板（`Ctrl/Cmd + P`）执行「Smart Tagger: 为当前文件生成标签」
+   - 命令面板（`Ctrl/Cmd + P`）执行「Smart Tagger AI: 为当前文件生成标签」
    - 文件管理器中右键文件 →「为该文件生成标签」
    - 右键文件夹 →「为该文件夹生成标签」（批量）
 

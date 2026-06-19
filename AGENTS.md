@@ -134,11 +134,11 @@ Obsidian 插件的 GitHub Release **只能且必须**包含以下 3 个文件，
 
 ## 项目信息
 
-> 本节是 Obsidian Smart Tagger 的项目专属知识，所有 agent 通用。
+> 本节是 Obsidian Smart Tagger AI 的项目专属知识，所有 agent 通用。
 
 ### 项目概述
 
-Obsidian Smart Tagger 是一个 Obsidian 插件，使用 AI（OpenAI 兼容 API 或 Ollama）为 Markdown 文档自动生成标签并写入 frontmatter。支持自定义 frontmatter 字段生成、模板管理、文件排除规则、思考模式和中英双语界面。
+Obsidian Smart Tagger AI 是一个 Obsidian 插件，使用 AI（OpenAI 兼容 API 或 Ollama）为 Markdown 文档自动生成标签并写入 frontmatter。支持自定义 frontmatter 字段生成、模板管理、文件排除规则、思考模式和中英双语界面。
 
 ### 常用命令
 
