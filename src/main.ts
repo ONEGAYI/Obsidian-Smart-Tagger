@@ -7,6 +7,7 @@ import { encryptApiKey, decryptApiKey } from "./crypto";
 import { Tagger } from "./tagger/tagger";
 import { SmartTaggerSettingTab } from "./settings";
 import { Logger } from "./logger";
+import { t } from "./i18n";
 
 export default class SmartTaggerPlugin extends Plugin {
   settings!: SmartTaggerSettings;
@@ -23,6 +24,9 @@ export default class SmartTaggerPlugin extends Plugin {
       this.settings.promptTemplates = getDefaultTemplates();
       this.settings.activePromptName = DEFAULT_PROMPT_TEMPLATE.name;
       await this.saveSettings();
+    } else {
+      // 迁移：为老用户的默认模板补上稳定 id，使后续 findTemplate 可按 id 匹配
+      this.migrateTemplateIds();
     }
 
     const client = this.createClient();
@@ -74,7 +78,7 @@ export default class SmartTaggerPlugin extends Plugin {
         );
       } catch {
         this.logger.warn("API Key 解密失败，已清空。请重新输入 API Key。");
-        new Notice("Smart Tagger: API Key 解密失败，请重新输入");
+        new Notice(t("notice.decryptFailed"));
         this.settings.openaiApiKey = "";
       }
     }
@@ -89,6 +93,21 @@ export default class SmartTaggerPlugin extends Plugin {
       );
     }
     await this.saveData(toSave);
+  }
+
+  /** 给老版本（无 id）的默认模板补上稳定 id "__default__"，便于 findTemplate 按 id 匹配 */
+  private migrateTemplateIds(): void {
+    let changed = false;
+    this.settings.promptTemplates = this.settings.promptTemplates.map((tpl) => {
+      if (!tpl.id && tpl.name === DEFAULT_PROMPT_TEMPLATE.name) {
+        changed = true;
+        return { ...tpl, id: DEFAULT_PROMPT_TEMPLATE.id };
+      }
+      return tpl;
+    });
+    if (changed) {
+      void this.saveSettings();
+    }
   }
 
   private createClient() {
@@ -121,7 +140,7 @@ export default class SmartTaggerPlugin extends Plugin {
   private registerCommands(): void {
     this.addCommand({
       id: "onegayi-smart-tagger:tag-current-file",
-      name: "为当前文件生成标签",
+      name: t("command.tagFile"),
       callback: () => {
         const file = this.app.workspace.getActiveFile();
         if (!file || file.extension !== "md") return;
@@ -131,7 +150,7 @@ export default class SmartTaggerPlugin extends Plugin {
 
     this.addCommand({
       id: "onegayi-smart-tagger:tag-current-folder",
-      name: "为当前文件夹所有文件生成标签",
+      name: t("command.tagFolder"),
       callback: () => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return;
@@ -148,7 +167,7 @@ export default class SmartTaggerPlugin extends Plugin {
         if (file instanceof TFile && file.extension === "md") {
           menu.addItem((item) => {
             item
-              .setTitle("Smart Tagger: 为该文件生成标签")
+              .setTitle(t("command.menuTagFile"))
               .setIcon("tag")
               .onClick(() => {
                 this.tagger.generateTagsForFile(file);
@@ -159,7 +178,7 @@ export default class SmartTaggerPlugin extends Plugin {
         if (file instanceof TFolder) {
           menu.addItem((item) => {
             item
-              .setTitle("Smart Tagger: 为该文件夹生成标签")
+              .setTitle(t("command.menuTagFolder"))
               .setIcon("tag")
               .onClick(() => {
                 this.tagger.generateTagsForFolder(file);

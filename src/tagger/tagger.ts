@@ -4,6 +4,7 @@ import { findTemplate, extractCustomFields } from "../ai/prompts";
 import { shouldSkip, extractContent, truncateContent, writeFields, isPathExcluded, hasExcludedKey } from "./frontmatter";
 import { getVaultTags, invalidateVaultTagsCache } from "./vault-tags";
 import { Logger } from "../logger";
+import { getLanguageName } from "../i18n";
 import {
   ProgressNotice,
   notifyStart,
@@ -95,6 +96,7 @@ export class Tagger {
       preferExisting: this.settings.preferExistingTags,
       minTags: this.settings.minTags,
       maxTags: this.settings.maxTags,
+      language: getLanguageName(),
     });
   }
 

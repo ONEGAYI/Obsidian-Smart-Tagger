@@ -35,6 +35,7 @@ export class OllamaClient implements AIClient {
       maxTags: options.maxTags,
       existingTags: options.existingTags,
       preferExisting: options.preferExisting,
+      language: options.language,
     });
 
     const body: Record<string, unknown> = {
