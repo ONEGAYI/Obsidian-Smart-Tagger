@@ -366,7 +366,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("调试模式")
-      .setDesc("在控制台输出详细日志")
+      .setDesc("开启后在控制台输出调试日志（默认关闭以满足 Obsidian 社区规范，排障时可开启）")
       .addToggle((toggle) =>
         toggle.setValue(this.settings.debugMode).onChange(async (value) => {
           this.settings.debugMode = value;

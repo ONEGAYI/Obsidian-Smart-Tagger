@@ -6,15 +6,18 @@ import { getDefaultTemplates, findTemplate } from "./ai/prompts";
 import { encryptApiKey, decryptApiKey } from "./crypto";
 import { Tagger } from "./tagger/tagger";
 import { SmartTaggerSettingTab } from "./settings";
+import { Logger } from "./logger";
 
 export default class SmartTaggerPlugin extends Plugin {
   settings!: SmartTaggerSettings;
   tagger!: Tagger;
+  logger!: Logger;
 
   async onload() {
-    console.log("[Smart-Tagger] 插件加载");
+    this.logger = new Logger(() => this.settings.debugMode);
 
     await this.loadSettings();
+    this.logger.debug("插件加载");
 
     if (this.settings.promptTemplates.length === 0) {
       this.settings.promptTemplates = getDefaultTemplates();
@@ -23,7 +26,7 @@ export default class SmartTaggerPlugin extends Plugin {
     }
 
     const client = this.createClient();
-    this.tagger = new Tagger(this.app, client, this.settings);
+    this.tagger = new Tagger(this.app, client, this.settings, this.logger);
 
     this.registerCommands();
     this.registerFileMenu();
@@ -49,7 +52,7 @@ export default class SmartTaggerPlugin extends Plugin {
   }
 
   onunload() {
-    console.log("[Smart-Tagger] 插件卸载");
+    this.logger.debug("插件卸载");
   }
 
   private async loadSettings(): Promise<void> {
@@ -70,7 +73,7 @@ export default class SmartTaggerPlugin extends Plugin {
           this.app.vault.adapter.getBasePath?.() ?? ""
         );
       } catch {
-        console.warn("[Smart-Tagger] API Key 解密失败，已清空。请重新输入 API Key。");
+        this.logger.warn("API Key 解密失败，已清空。请重新输入 API Key。");
         new Notice("Smart Tagger: API Key 解密失败，请重新输入");
         this.settings.openaiApiKey = "";
       }

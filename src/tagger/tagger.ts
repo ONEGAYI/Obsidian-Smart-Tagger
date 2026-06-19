@@ -3,6 +3,7 @@ import { AIClient, SmartTaggerSettings, PromptTemplate, DEFAULT_PROMPT_TEMPLATE 
 import { findTemplate, extractCustomFields } from "../ai/prompts";
 import { shouldSkip, extractContent, truncateContent, writeFields, isPathExcluded, hasExcludedKey } from "./frontmatter";
 import { getVaultTags, invalidateVaultTagsCache } from "./vault-tags";
+import { Logger } from "../logger";
 import {
   ProgressNotice,
   notifyStart,
@@ -19,7 +20,8 @@ export class Tagger {
   constructor(
     private app: App,
     protected client: AIClient,
-    private settings: SmartTaggerSettings
+    private settings: SmartTaggerSettings,
+    private logger: Logger
   ) {}
 
   updateClient(client: AIClient) {
@@ -66,16 +68,14 @@ export class Tagger {
       progress.done();
       notifySuccess(result.tags);
 
-      if (this.settings.debugMode) {
-        console.log("[Smart-Tagger] 标签生成成功:", file.path, result.tags, result.fields);
-      }
+      this.logger.debug("标签生成成功:", file.path, result.tags, result.fields);
 
       return { success: true };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       progress.done();
       notifyError(message);
-      console.error("[Smart-Tagger] 标签生成失败:", error);
+      this.logger.error("标签生成失败:", error);
       return { success: false, reason: "error" };
     } finally {
       this.isProcessing = false;
@@ -153,7 +153,7 @@ export class Tagger {
             failed++;
           }
         } catch (error) {
-          console.error("[Smart-Tagger] 文件处理失败:", file.path, error);
+          this.logger.error("文件处理失败:", file.path, error);
           failed++;
         }
 
