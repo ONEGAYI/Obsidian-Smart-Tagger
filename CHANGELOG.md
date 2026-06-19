@@ -4,6 +4,20 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.1.0] - 2026-06-19
+
+新增中英双语界面与日志等级控制。界面文案随 Obsidian 语言自动切换；调试日志默认关闭以满足社区规范，可在设置中按需开启。
+
+### 新功能
+
+- **中英双语国际化（i18n）**：通知、设置面板、命令面板、右键菜单等所有界面文案随 Obsidian 语言自动切换（中文 / 英文），非中文环境回退英文
+- **AI 标签输出语言变量**：提示词模板新增 `{{language}}` 变量，按当前语言注入「中文」/「English」，用户可在模板中引用以控制 AI 生成标签的语言；默认模板的标签语言规则已改用此变量
+- **调试日志等级控制**：新增 `Logger`，调试日志默认关闭（满足 Obsidian 社区「默认配置下控制台不得有 debug 输出」规范），可在「设置 → 高级 → 调试模式」按需开启；错误与警告始终输出
+
+### 其他改进
+
+- 提示词模板引入稳定主键 `id`（默认模板为 `__default__`），模板匹配优先按 id、回退按 name，兼容老用户已保存的模板数据（升级时自动迁移补全 id）
+
 ## [1.0.0] - 2026-06-19
 
 首个公开版本。使用 AI（OpenAI 兼容 API 或 Ollama）为 Obsidian 文档自动生成标签并写入 frontmatter，支持自定义字段、模板管理、文件排除和思考模式。
@@ -29,4 +43,5 @@
 - 文件排除规则统一为 gitignore 语法，设置界面改为弹窗多行编辑器，便于维护复杂规则
 
 <!-- 变更链接 -->
+[1.1.0]: https://github.com/ONEGAYI/Obsidian-Smart-Tagger/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ONEGAYI/Obsidian-Smart-Tagger/releases/tag/v1.0.0
