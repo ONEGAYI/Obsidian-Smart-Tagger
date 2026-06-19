@@ -1,6 +1,6 @@
 {
   "name": "obsidian-smart-tagger",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "使用 AI 为 Obsidian 文档自动生成标签",
   "main": "main.js",
   "license": "MIT",

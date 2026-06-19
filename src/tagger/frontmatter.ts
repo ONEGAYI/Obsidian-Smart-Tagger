@@ -4,11 +4,13 @@ import { App, TFile } from "obsidian";
 function globToRegex(pattern: string): RegExp {
   let p = pattern;
 
-  // 占位符保护 ** 不被后续 * 替换污染
-  const MID   = "\x01"; // /**/
-  const LEAD  = "\x02"; // **/ at start
-  const TRAIL = "\x03"; // /** at end
-  const ANY   = "\x04"; // standalone **
+  // 占位符保护 ** 不被后续 * 替换污染。
+  // 使用 Unicode 私用区字符（U+E000~U+E003）而非控制字符：
+  // 一来不会触发 no-control-regex lint，二来 glob 模式中绝不会出现私用区字符，安全无碰撞。
+  const MID   = "\uE000"; // /**/
+  const LEAD  = "\uE001"; // **/ at start
+  const TRAIL = "\uE002"; // /** at end
+  const ANY   = "\uE003"; // standalone **
 
   p = p.replace(/\/\*\*\//g, "/" + MID);
   p = p.replace(/^\*\*\//, LEAD);
@@ -21,10 +23,10 @@ function globToRegex(pattern: string): RegExp {
   p = p.replace(/\*/g, "[^/]*");
   p = p.replace(/\?/g, "[^/]");
 
-  p = p.replace(/\x01/g, "(.+/)?");
-  p = p.replace(/\x02/g, "(.+/)?");
-  p = p.replace(/\x03/g, ".*");
-  p = p.replace(/\x04/g, ".*");
+  p = p.replace(new RegExp(MID, "g"), "(.+/)?");
+  p = p.replace(new RegExp(LEAD, "g"), "(.+/)?");
+  p = p.replace(new RegExp(TRAIL, "g"), ".*");
+  p = p.replace(new RegExp(ANY, "g"), ".*");
 
   return new RegExp("^" + p + "$");
 }

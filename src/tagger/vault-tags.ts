@@ -1,4 +1,16 @@
-import { App } from "obsidian";
+import { App, MetadataCache } from "obsidian";
+
+/**
+ * Vault 中所有标签及其出现次数。
+ * metadataCache.getTags() 运行时存在但 obsidian 类型定义未声明（历史补全滞后），
+ * 这里集中做一次类型断言，避免散落的 as。
+ */
+function getAllTags(app: App): Record<string, number> {
+  const cache = app.metadataCache as MetadataCache & {
+    getTags?: () => Record<string, number>;
+  };
+  return cache.getTags?.() ?? {};
+}
 
 let cachedTags: string[] | null = null;
 
@@ -8,7 +20,7 @@ let cachedTags: string[] | null = null;
 export function getVaultTags(app: App): string[] {
   if (cachedTags !== null) return cachedTags;
 
-  const tagMap = app.metadataCache.getTags();
+  const tagMap = getAllTags(app);
   if (!tagMap) {
     cachedTags = [];
     return cachedTags;
@@ -29,9 +41,7 @@ export function invalidateVaultTagsCache(): void {
  * 获取按出现次数排序的标签列表（降序）
  */
 export function getVaultTagsSorted(app: App, limit?: number): string[] {
-  const tagMap = app.metadataCache.getTags();
-  if (!tagMap) return [];
-
+  const tagMap = getAllTags(app);
   const entries = Object.entries(tagMap)
     .map(([tag, count]) => ({ tag: tag.replace(/^#/, ""), count }))
     .sort((a, b) => b.count - a.count);

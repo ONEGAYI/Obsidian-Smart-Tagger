@@ -4,6 +4,24 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.1.2] - 2026-06-19
+
+修复 Obsidian 社区审核反馈，统一设置面板标题写法、命令 id 规范与项目对外语言（英文为默认），并清理一批遗留的类型与测试问题。
+
+### Bug 修复
+
+- **设置面板标题**：6 处 `createEl("h2/h3")` 改为 `new Setting().setName().setHeading()`，符合 Obsidian 一致 UI 规范（审核 Error）
+- **manifest description**：补全英文描述并以句点结尾（审核 Manifest Warning），改为「Automatically generate tags for your notes using AI and write them to frontmatter.」
+- **README 改为英文默认**：`README.md` 升为英文版（社区目录以英文为主），中文版迁移至 `README.zh.md`，修正双向语言切换链接（审核 README Warning）
+- **命令 id 去前缀**：`onegayi-smart-tagger:tag-current-file` 等改为 `tag-current-file`，Obsidian 会自动加插件 id 前缀防冲突，无需手动加（审核 Warning）
+
+### 其他改进
+
+- **类型错误清理**：`setIcon` 多传的 size 参数、`setWarning(true)` 改无参调用、`getBasePath` 用 `FileSystemAdapter` 窄化、`metadataCache.getTags()` 补类型断言，`tsc --noEmit` 现零错误
+- **代码规范**：4 处 fire-and-forget 的 Promise 加 `void` 标记；删除 `settings.ts`/`tagger.ts` 未使用的 import；清理 `settings.ts` 中 4 处冗余的 `activeTemplate!` 断言
+- **glob 正则**：文件排除匹配的占位符由 ASCII 控制字符（`\x01-\x04`）改为 Unicode 私用区字符（`\uE000-\uE003`），消除 `no-control-regex` 警告，匹配行为不变
+- **测试修复**：`prompts.test.ts` 的测试模板补回遗漏的 `{{existingTags}}` 占位符，与真实默认模板结构对齐
+
 ## [1.1.1] - 2026-06-19
 
 修复插件显示名与社区目录已有插件重名导致无法提交审核的问题。
@@ -55,6 +73,7 @@
 - 文件排除规则统一为 gitignore 语法，设置界面改为弹窗多行编辑器，便于维护复杂规则
 
 <!-- 变更链接 -->
+[1.1.2]: https://github.com/ONEGAYI/Obsidian-Smart-Tagger/compare/1.1.1...1.1.2
 [1.1.1]: https://github.com/ONEGAYI/Obsidian-Smart-Tagger/compare/v1.1.0...1.1.1
 [1.1.0]: https://github.com/ONEGAYI/Obsidian-Smart-Tagger/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ONEGAYI/Obsidian-Smart-Tagger/releases/tag/v1.0.0

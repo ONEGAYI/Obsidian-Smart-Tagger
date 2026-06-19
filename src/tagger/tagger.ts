@@ -6,7 +6,6 @@ import { getVaultTags, invalidateVaultTagsCache } from "./vault-tags";
 import { Logger } from "../logger";
 import { getLanguageName } from "../i18n";
 import {
-  ProgressNotice,
   notifyStart,
   notifySuccess,
   notifySkipped,

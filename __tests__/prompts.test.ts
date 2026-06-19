@@ -3,7 +3,7 @@ import { renderPrompt, getDefaultTemplates } from "../src/ai/prompts";
 const DEFAULT_TEMPLATE = {
   name: "默认模板",
   system: "你是一个文档标签生成专家。标签使用 {{language}}。",
-  user: "请为以下文档内容生成合适的标签。标签数量：{{minTags}} 到 {{maxTags}} 个。\n\n{{content}}",
+  user: "请为以下文档内容生成合适的标签。标签数量：{{minTags}} 到 {{maxTags}} 个。\n\n{{existingTags}}\n{{content}}",
 };
 
 describe("prompts", () => {

@@ -1,4 +1,4 @@
-import { App, Plugin, PluginSettingTab, Setting, Notice, Modal, setIcon } from "obsidian";
+import { App, Plugin, PluginSettingTab, Setting, Modal, setIcon } from "obsidian";
 import { SmartTaggerSettings, PromptTemplate, DEFAULT_PROMPT_TEMPLATE, DEFAULT_EXCLUDE_PATTERNS, DEFAULT_EXCLUDE_FM_KEYS } from "./types";
 import { getDefaultTemplates, upsertTemplate, deleteTemplate } from "./ai/prompts";
 import { notifyTestConnection } from "./ui/notice";
@@ -84,7 +84,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: t("setting.title") });
+    new Setting(containerEl).setName(t("setting.title")).setHeading();
     this.renderAISection(containerEl);
     this.renderStrategySection(containerEl);
     this.renderExcludeSection(containerEl);
@@ -93,7 +93,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
   }
 
   private renderAISection(containerEl: HTMLElement): void {
-    containerEl.createEl("h3", { text: t("setting.aiSection") });
+    new Setting(containerEl).setName(t("setting.aiSection")).setHeading();
 
     new Setting(containerEl)
       .setName(t("setting.aiMode"))
@@ -197,7 +197,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
   }
 
   private renderStrategySection(containerEl: HTMLElement): void {
-    containerEl.createEl("h3", { text: t("setting.strategySection") });
+    new Setting(containerEl).setName(t("setting.strategySection")).setHeading();
 
     new Setting(containerEl)
       .setName(t("setting.minTags"))
@@ -278,7 +278,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
   }
 
   private renderExcludeSection(containerEl: HTMLElement): void {
-    containerEl.createEl("h3", { text: t("setting.excludeSection") });
+    new Setting(containerEl).setName(t("setting.excludeSection")).setHeading();
 
     new Setting(containerEl)
       .setName(t("setting.excludePath"))
@@ -289,7 +289,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
       )
       .addButton((btn) => {
         btn.buttonEl.empty();
-        setIcon(btn.buttonEl, "pencil", 16);
+        setIcon(btn.buttonEl, "pencil");
         btn.buttonEl.createSpan({ text: t("setting.editBtn") });
         btn.onClick(() => {
           new RuleEditModal(
@@ -315,7 +315,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
       )
       .addButton((btn) => {
         btn.buttonEl.empty();
-        setIcon(btn.buttonEl, "pencil", 16);
+        setIcon(btn.buttonEl, "pencil");
         btn.buttonEl.createSpan({ text: t("setting.editBtn") });
         btn.onClick(() => {
           new RuleEditModal(
@@ -335,7 +335,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName(t("setting.resetExclude"))
       .addButton((btn) =>
-        btn.setButtonText(t("setting.resetExcludeBtn")).setWarning(true).onClick(async () => {
+        btn.setButtonText(t("setting.resetExcludeBtn")).setWarning().onClick(async () => {
           this.settings.excludePatterns = [...DEFAULT_EXCLUDE_PATTERNS];
           this.settings.excludeFrontmatterKeys = [...DEFAULT_EXCLUDE_FM_KEYS];
           await this.save();
@@ -345,7 +345,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
   }
 
   private renderAdvancedSection(containerEl: HTMLElement): void {
-    containerEl.createEl("h3", { text: t("setting.advancedSection") });
+    new Setting(containerEl).setName(t("setting.advancedSection")).setHeading();
 
     new Setting(containerEl)
       .setName(t("setting.thinkingMode"))
@@ -369,7 +369,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
   }
 
   private renderPromptSection(containerEl: HTMLElement): void {
-    containerEl.createEl("h3", { text: t("setting.promptSection") });
+    new Setting(containerEl).setName(t("setting.promptSection")).setHeading();
 
     const templateNames = this.settings.promptTemplates.map((tpl) => tpl.name);
 
@@ -433,17 +433,17 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
       .setName(t("setting.templateOps"))
       .addButton((btn) =>
         btn.setButtonText(t("setting.saveCurrent")).onClick(async () => {
-          if (this._pendingTemplateName && this._pendingTemplateName !== activeTemplate!.name) {
+          if (this._pendingTemplateName && this._pendingTemplateName !== activeTemplate.name) {
             const newName = this._pendingTemplateName.trim();
             if (newName) {
-              const oldName = activeTemplate!.name;
-              activeTemplate!.name = newName;
+              const oldName = activeTemplate.name;
+              activeTemplate.name = newName;
               if (this.settings.activePromptName === oldName) {
                 this.settings.activePromptName = newName;
               }
             }
           }
-          this.settings.promptTemplates = upsertTemplate(this.settings.promptTemplates, activeTemplate!);
+          this.settings.promptTemplates = upsertTemplate(this.settings.promptTemplates, activeTemplate);
           this._pendingTemplateName = undefined;
           await this.save();
           this.display();
@@ -467,7 +467,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
         })
       )
       .addButton((btn) =>
-        btn.setButtonText(t("setting.deleteCurrent")).setWarning(true).onClick(async () => {
+        btn.setButtonText(t("setting.deleteCurrent")).setWarning().onClick(async () => {
           if (this.settings.promptTemplates.length <= 1) return;
           this.settings.promptTemplates = deleteTemplate(
             this.settings.promptTemplates,
@@ -479,7 +479,7 @@ export class SmartTaggerSettingTab extends PluginSettingTab {
         })
       )
       .addButton((btn) =>
-        btn.setButtonText(t("setting.resetDefault")).setWarning(true).onClick(async () => {
+        btn.setButtonText(t("setting.resetDefault")).setWarning().onClick(async () => {
           this.settings.promptTemplates = getDefaultTemplates();
           this.settings.activePromptName = DEFAULT_PROMPT_TEMPLATE.name;
           await this.save();

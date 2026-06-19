@@ -1,4 +1,4 @@
-import { Plugin, TFile, TFolder, Menu, Notice } from "obsidian";
+import { Plugin, TFile, TFolder, Menu, Notice, FileSystemAdapter } from "obsidian";
 import { SmartTaggerSettings, DEFAULT_SETTINGS, DEFAULT_PROMPT_TEMPLATE } from "./types";
 import { OpenAIClient } from "./ai/openai-client";
 import { OllamaClient } from "./ai/ollama-client";
@@ -74,7 +74,7 @@ export default class SmartTaggerPlugin extends Plugin {
       try {
         this.settings.openaiApiKey = await decryptApiKey(
           this.settings.openaiApiKey,
-          this.app.vault.adapter.getBasePath?.() ?? ""
+          this.getVaultPath()
         );
       } catch {
         this.logger.warn("API Key 解密失败，已清空。请重新输入 API Key。");
@@ -89,10 +89,20 @@ export default class SmartTaggerPlugin extends Plugin {
     if (toSave.openaiApiKey) {
       toSave.openaiApiKey = await encryptApiKey(
         toSave.openaiApiKey,
-        this.app.vault.adapter.getBasePath?.() ?? ""
+        this.getVaultPath()
       );
     }
     await this.saveData(toSave);
+  }
+
+  /**
+   * 获取 vault 根目录的绝对路径，作为 API Key 加密的密钥材料。
+   * getBasePath 仅存在于 FileSystemAdapter（桌面端），移动端为 DummyMetadataAdapter 不支持，
+   * 用 instanceof 窄化以通过类型检查，移动端回退为空串。
+   */
+  private getVaultPath(): string {
+    const adapter = this.app.vault.adapter;
+    return adapter instanceof FileSystemAdapter ? adapter.getBasePath() : "";
   }
 
   /** 给老版本（无 id）的默认模板补上稳定 id "__default__"，便于 findTemplate 按 id 匹配 */
@@ -139,24 +149,24 @@ export default class SmartTaggerPlugin extends Plugin {
 
   private registerCommands(): void {
     this.addCommand({
-      id: "onegayi-smart-tagger:tag-current-file",
+      id: "tag-current-file",
       name: t("command.tagFile"),
       callback: () => {
         const file = this.app.workspace.getActiveFile();
         if (!file || file.extension !== "md") return;
-        this.tagger.generateTagsForFile(file);
+        void this.tagger.generateTagsForFile(file);
       },
     });
 
     this.addCommand({
-      id: "onegayi-smart-tagger:tag-current-folder",
+      id: "tag-current-folder",
       name: t("command.tagFolder"),
       callback: () => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return;
         const folder = file.parent;
         if (!folder) return;
-        this.tagger.generateTagsForFolder(folder);
+        void this.tagger.generateTagsForFolder(folder);
       },
     });
   }
@@ -170,7 +180,7 @@ export default class SmartTaggerPlugin extends Plugin {
               .setTitle(t("command.menuTagFile"))
               .setIcon("tag")
               .onClick(() => {
-                this.tagger.generateTagsForFile(file);
+                void this.tagger.generateTagsForFile(file);
               });
           });
         }
@@ -181,7 +191,7 @@ export default class SmartTaggerPlugin extends Plugin {
               .setTitle(t("command.menuTagFolder"))
               .setIcon("tag")
               .onClick(() => {
-                this.tagger.generateTagsForFolder(file);
+                void this.tagger.generateTagsForFolder(file);
               });
           });
         }
